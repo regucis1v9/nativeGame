@@ -1,7 +1,8 @@
-// tailwind.config.js
-
 module.exports = {
-  content: ["./App.{js,jsx,ts,tsx}", "./<custom directory>/**/*.{js,jsx,ts,tsx}"],
+  content: [
+    "./App.{js,jsx,ts,tsx}",
+    "./Components/**/*.{js,jsx,ts,tsx}", // Include all files within the components directory
+  ],
   theme: {
     extend: {},
   },

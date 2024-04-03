@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Animated, StatusBar, Text, View, Image, TouchableOpacity } from 'react-native';
 
-export default function Landing({ navigation }) {
+export default function Loading({ navigation }) {
 
   const navigateToProfile = () => {
     navigation.reset({
@@ -41,7 +41,6 @@ export default function Landing({ navigation }) {
       className="flex-1 items-center justify-center bg-gray-900"
       onPress={navigateToProfile}
     >
-      <StatusBar style="auto" />
       <Animated.View
         style={{
           opacity: logoFadeAnim,

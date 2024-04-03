@@ -5,9 +5,6 @@ import 'tailwindcss/tailwind.css';
 
 export default function Landing() {
   return (   
-      <View className="flex-1 items-center justify-center bg-gray-900">
-        <StatusBar style="auto" />
-      </View>
     <View className="flex-1 items-center bg-gray-900">
       <Image
           source={require('../assets/logo.png')} // Load PNG as static asset

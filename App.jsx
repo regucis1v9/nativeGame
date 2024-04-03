@@ -5,7 +5,6 @@ import Loading from './Components/Loading';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
 
-
 export default function App() {
   const Stack = createNativeStackNavigator();
 

@@ -3,7 +3,7 @@ import { View, PanResponder } from 'react-native';
 import 'tailwindcss/tailwind.css';
 
 export default function Game() {
-  const [playerLocation, setPlayerLocation] = useState('middle');
+  const playerLocationRef = useRef('middle'); // useRef for playerLocation
   const swipeDirection = useRef(null);
 
   const panResponder = useRef(
@@ -13,50 +13,54 @@ export default function Game() {
         const { dx } = gestureState;
         if (Math.abs(dx) > 10) {
           // Minimum distance to consider it a swipe
-          swipeDirection.current = dx > 0 ? 'right' : 'left';
+          swipeDirection.current = dx > 0 ? 'left' : 'right';
         }
       },
       onPanResponderRelease: () => {
-        if (swipeDirection.current === 'left') {
-          if (playerLocation === 'left') {
-            setPlayerLocation("left")
+        const direction = swipeDirection.current; // Capture the value before resetting
+
+        if (direction === 'right') {
+          if (playerLocationRef.current === 'right') {
+            console.log("edge swipe");
+            return;
           }
-          setPlayerLocation(prevLocation => {
-            return prevLocation === 'middle' ? 'right' : 'middle';
-          });
+          setPlayerLocation(prevLocation =>
+            prevLocation === 'middle' ? 'right' : 'middle'
+          );
         }
-        if (swipeDirection.current === 'right') {
-          if (playerLocation === 'right') {
-            setPlayerLocation("right")
+        if (direction === 'left') {
+          if (playerLocationRef.current === 'left') {
+            console.log("edge swipe");
+            return;
           }
-          setPlayerLocation(prevLocation => {
-            return prevLocation === 'middle' ? 'left' : 'middle';
-          });
+          setPlayerLocation(prevLocation =>
+            prevLocation === 'middle' ? 'left' : 'middle'
+          );
         }
-        swipeDirection.current = null;
+
+        swipeDirection.current = null; // Reset swipe direction
       },
     })
   ).current;
-  
-  
+
+  const [playerLocation, setPlayerLocation] = useState('middle'); // Player location state
 
   let backgroundColor;
   switch (playerLocation) {
     case 'middle':
       backgroundColor = 'bg-gray-900';
-      console.log(playerLocation);
       break;
     case 'left':
       backgroundColor = 'bg-red-500'; 
-      console.log(playerLocation);// Change to whatever color you prefer
       break;
     case 'right':
       backgroundColor = 'bg-blue-500';
-      console.log(playerLocation); // Change to whatever color you prefer
       break;
     default:
       backgroundColor = 'bg-gray-900';
   }
+
+  playerLocationRef.current = playerLocation; // Update player location ref
 
   return (   
     <View

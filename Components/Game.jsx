@@ -53,6 +53,7 @@ export default function Game() {
     }).start();
   }, [playerLocation, transitionValue]); // Added transitionValue to the dependencies
 
+
   playerLocationRef.current = playerLocation; // Update player location ref
 
   return (   

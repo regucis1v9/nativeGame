@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import Landing from './Components/Landing';
 import Game from './Components/Game';
 import Loading from './Components/Loading';
-import Leaderboard from './Components/Leaderboard';
+import Leaderboard from "./Components/Leaderboard"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
 
@@ -29,10 +29,10 @@ export default function App() {
           options={{ headerShown: false }} // Hide header for Landing screen
         />
         <Stack.Screen
-           name="Leaderboard"
-           component={Leaderboard}
-           options={{ headerShown: false }} // Hide header for Landing screen
-         />
+          name="Leaderboard"
+          component={Leaderboard}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

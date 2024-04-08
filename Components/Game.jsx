@@ -1,10 +1,12 @@
-import React, { useRef, useState } from 'react';
-import { View, PanResponder } from 'react-native';
-import 'tailwindcss/tailwind.css';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, PanResponder, Animated } from 'react-native';
+import 'tailwindcss/tailwind.css'; // Corrected import for tailwind.css
 
 export default function Game() {
   const playerLocationRef = useRef('middle'); // useRef for playerLocation
   const swipeDirection = useRef(null);
+  const [playerLocation, setPlayerLocation] = useState('middle'); // Player location state
+  const [transitionValue] = useState(new Animated.Value(0)); // We don't need to setTransitionValue
 
   const panResponder = useRef(
     PanResponder.create({
@@ -43,30 +45,36 @@ export default function Game() {
     })
   ).current;
 
-  const [playerLocation, setPlayerLocation] = useState('middle'); // Player location state
-
-  let backgroundColor;
-  switch (playerLocation) {
-    case 'middle':
-      backgroundColor = 'bg-gray-900';
-      break;
-    case 'left':
-      backgroundColor = 'bg-red-500'; 
-      break;
-    case 'right':
-      backgroundColor = 'bg-blue-500';
-      break;
-    default:
-      backgroundColor = 'bg-gray-900';
-  }
+  useEffect(() => {
+    Animated.timing(transitionValue, {
+      toValue: playerLocation === 'middle' ? 0 : playerLocation === 'left' ? -1 : 1,
+      duration: 150,
+      useNativeDriver: true
+    }).start();
+  }, [playerLocation, transitionValue]); // Added transitionValue to the dependencies
 
   playerLocationRef.current = playerLocation; // Update player location ref
 
   return (   
     <View
       {...panResponder.panHandlers}
-      className={`flex-1 items-center ${backgroundColor}`}
+      className="flex-1 justify-end items-center bg-gray-900"
     >
+      <Animated.View
+        style={{
+          transform: [
+            {
+              translateX: transitionValue.interpolate({
+                inputRange: [-1, 0, 1],
+                outputRange: ['100%', '0%', '-100%'].map(val => parseFloat(val)) // Ensure values are parsed as floats
+              })
+            }
+          ]
+        }}
+        className="flex-1 justify-end items-center w-1/3"
+      >
+        <View style={{ marginBottom: 200 }} className='w-20 h-20 bg-blue-500'></View>
+      </Animated.View>
     </View>
   );
 }

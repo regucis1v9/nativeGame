@@ -10,8 +10,8 @@ export default function Loading({ navigation }) {
     });
   };
 
-  const [logoFadeAnim] = useState(new Animated.Value(0)); // Initial value for logo opacity: 0
-  const [textFadeAnim] = useState(new Animated.Value(0)); // Initial value for text opacity: 0
+  const [logoFadeAnim] = useState(new Animated.Value(0)); 
+  const [textFadeAnim] = useState(new Animated.Value(0));
 
   useEffect(() => {
     Animated.timing(

@@ -5,7 +5,6 @@ import 'tailwindcss/tailwind.css';
 export default function Game() {
   const [playerLocation, setPlayerLocation] = useState('middle');
   const swipeDirection = useRef(null);
-
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,

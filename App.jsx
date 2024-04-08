@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import Landing from './Components/Landing';
+import Game from './Components/Game';
 import Loading from './Components/Loading';
 import Leaderboard from './Components/Leaderboard';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -22,11 +23,16 @@ export default function App() {
           component={Landing}
           options={{ headerShown: false }} // Hide header for Landing screen
         />
-          <Stack.Screen
-              name="Leaderboard"
-              component={Leaderboard}
-              options={{ headerShown: false }} // Hide header for Landing screen
-          />
+        <Stack.Screen
+          name="Game"
+          component={Game}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+           name="Leaderboard"
+           component={Leaderboard}
+           options={{ headerShown: false }} // Hide header for Landing screen
+         />
       </Stack.Navigator>
     </NavigationContainer>
   );

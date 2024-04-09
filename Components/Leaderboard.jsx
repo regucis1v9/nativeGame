@@ -18,8 +18,6 @@ export default function Leaderboard() {
     useEffect(() => {
         loadFont();
     }, []);
-
-    // Sample data for the leaderboard
     const leaderboardData = [
         { rank: 1, username: 'User1', score: 1000 },
         { rank: 2, username: 'User2', score: 900 },
@@ -30,7 +28,6 @@ export default function Leaderboard() {
         { rank: 7, username: 'User1', score: 400 },
         { rank: 8, username: 'User2', score: 300 },
         { rank: 9, username: 'User3', score: 200 },
-        // ... add more users here
     ];
 
     return (

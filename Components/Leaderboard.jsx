@@ -16,8 +16,6 @@ export default function Leaderboard() {
     }
 
     useEffect(() => {
-        // Load font and ignore the warning about the unhandled promise
-        // eslint-disable-next-line
         loadFont();
     }, []);
 

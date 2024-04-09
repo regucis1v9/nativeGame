@@ -11,7 +11,7 @@ export default function Game() {
   const [boxTransitionValue] = useState(new Animated.Value(0)); // Added for box movement
   const [justifyClass, setJustifyClass] = useState('justify-between'); // State for random justify class
   const [animationStarted, setAnimationStarted] = useState(false); 
-  
+  const scoreRef = useRef(0); // useRef for score
 
   const panResponder = useRef(
     PanResponder.create({
@@ -80,7 +80,7 @@ export default function Game() {
     if (!animationStarted) {
       setTimeout(() => {
         setAnimationStarted(true);
-      }, 1000); // Delay for 2 seconds before starting the animation
+      }, 1000); 
     } else {
       const animateBlock = () => {
         setJustifyClass(getRandomJustifyClass()); 
@@ -89,19 +89,19 @@ export default function Game() {
           duration: 2000,
           useNativeDriver: true,
         }).start(() => {
+          scoreRef.current += 1;
           boxTransitionValue.setValue(0);
-          animateBlock(); // Start the animation again once it completes
+          animateBlock();
         });
       };
     
-      animateBlock(); // Start the animation initially
+      animateBlock();
     
       return () => {
-        // Clean up function to stop the animation when the component unmounts
         boxTransitionValue.stopAnimation();
       };
     }
-  }, [animationStarted, boxTransitionValue]); // Add boxTransitionValue to the dependency array
+  }, [animationStarted, boxTransitionValue]); 
 
   const renderBlackBoxes = () => {
     if (justifyClass === 'justify-between') {
@@ -130,7 +130,7 @@ export default function Game() {
       {...panResponder.panHandlers}
       className="flex-1 items-center bg-gray-900 w-screen"
     >
-      <Text className="absolute top-10 right-10 color-white" >Score:</Text>
+      <Text className="absolute top-10 right-10 color-white" >Score: {scoreRef.current}</Text>
       <Animated.View
         className="w-full"
         style={{

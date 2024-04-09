@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, PanResponder, Animated, Image } from 'react-native';
-import 'tailwindcss/tailwind.css'; // Corrected import for tailwind.css
+import { View, PanResponder, Animated, Image, Text } from 'react-native';
+import 'tailwindcss/tailwind.css'; 
+import * as Font from 'expo-font';
 
 export default function Game() {
   const playerLocationRef = useRef('middle'); // useRef for playerLocation
@@ -9,7 +10,8 @@ export default function Game() {
   const [transitionValue] = useState(new Animated.Value(0)); // We don't need to setTransitionValue
   const [boxTransitionValue] = useState(new Animated.Value(0)); // Added for box movement
   const [justifyClass, setJustifyClass] = useState('justify-between'); // State for random justify class
-  const [animationStarted, setAnimationStarted] = useState(false); // State to track if animation has started
+  const [animationStarted, setAnimationStarted] = useState(false); 
+  
 
   const panResponder = useRef(
     PanResponder.create({
@@ -99,39 +101,36 @@ export default function Game() {
         boxTransitionValue.stopAnimation();
       };
     }
-  }, [animationStarted]); // Run effect when animationStarted changes
+  }, [animationStarted, boxTransitionValue]); // Add boxTransitionValue to the dependency array
 
   const renderBlackBoxes = () => {
     if (justifyClass === 'justify-between') {
       return (
         <>
-          <View className="w-1/3 h-20 bg-black"></View>
-          <View className="w-1/3 h-20 bg-black"></View>
+          <View className="w-1/3 h-20 bg-white"></View>
+          <View className="w-1/3 h-20 bg-white"></View>
         </>
       );
     } else if (justifyClass === 'justify-center') {
-      return <View className="w-1/3 h-20 bg-black"></View>;
+      return <View className="w-1/3 h-20 bg-blue-500"></View>;
     } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
-      const pairMade = justifyClass === 'justify-start' ? Math.random() < 0.5 : Math.random() >= 0.5;
-      if (pairMade) {
-        return (
-          <>
-            <View className="w-1/3 h-20 bg-black"></View>
-            <View className="w-1/3 h-20 bg-black"></View>
-          </>
-        );
-      } else {
-        return <View className="w-1/3 h-20 bg-black"></View>;
-      }
+      return (
+        <>
+          <View className="w-1/3 h-20 bg-red-500"></View>
+          <View className="w-1/3 h-20 bg-red-500"></View>
+        </>
+      );
     } else {
       return null;
     }
   };
+
   return (
     <View
       {...panResponder.panHandlers}
       className="flex-1 items-center bg-gray-900 w-screen"
     >
+      <Text className="absolute top-10 right-10 color-white" >Score:</Text>
       <Animated.View
         className="w-full"
         style={{

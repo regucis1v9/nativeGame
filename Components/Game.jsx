@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, PanResponder, Animated, Image, Text } from 'react-native';
+import { View, PanResponder, Animated, Image, Text, Pressable } from 'react-native';
 import 'tailwindcss/tailwind.css'; 
 import * as Font from 'expo-font';
 
@@ -130,7 +130,10 @@ export default function Game() {
       {...panResponder.panHandlers}
       className="flex-1 items-center bg-gray-900 w-screen"
     >
-      <Text className="absolute top-10 right-10 color-white" >Score: {scoreRef.current}</Text>
+        <Pressable>
+            <Text className="absolute top-16 color-white">Pause</Text>
+        </Pressable>
+        <Text className="absolute top-16 right-10 color-white" >Score: {scoreRef.current}</Text>
       <Animated.View
         className="w-full"
         style={{

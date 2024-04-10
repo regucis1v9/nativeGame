@@ -8,8 +8,8 @@ export default function Landing() {
   return (   
     <View className="flex-1 items-center bg-gray-900">
       <Image
-        source={require('../assets/logo.png')}
-        className="w-100 h-100"
+        source={require('../assets/gameLogo.png')}
+        className="w-100 h-100 -mb-16 mt-10"
       />
       <Pressable onPress={() => navigation.navigate('Game')}>
         <Image

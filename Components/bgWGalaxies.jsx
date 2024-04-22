@@ -3,13 +3,14 @@ import { View, Image, Dimensions } from 'react-native';
 
 const Background = () => {
     const [images, setImages] = useState([]);
+    const [galaxies, setGalaxies] = useState([]);
 
     useEffect(() => {
-        const generateInitialImages = (imageList, numberOfInitialStars) => {
+        const generateInitialImages = (imageList, numberOfInitialImages) => {
             const screenWidth = Dimensions.get('window').width;
             const screenHeight = Dimensions.get('window').height;
             const initialImages = [];
-            for (let i = 0; i < numberOfInitialStars; i++) {
+            for (let i = 0; i < numberOfInitialImages; i++) {
                 const randomX = Math.floor(Math.random() * screenWidth);
                 const randomY = Math.floor(Math.random() * screenHeight);
                 const randomImageIndex = Math.floor(Math.random() * imageList.length);
@@ -30,11 +31,27 @@ const Background = () => {
                 imageUrl,
             }));
         };
-        
+
+        const generateRandomGalaxy = (imageList) => {
+            const screenWidth = Dimensions.get('window').width;
+            const randomX = Math.floor(Math.random() * screenWidth);
+            const randomRotation = Math.random() * 360; // Random rotation between 0 to 360 degrees
+            const randomImageIndex = Math.floor(Math.random() * imageList.length);
+            const imageUrl = imageList[randomImageIndex];
+            return { x: randomX, y: 0, imageUrl, rotation: randomRotation };
+        };
+
         const moveImages = () => {
             setImages(prevImages =>
                 prevImages.map(image => ({ ...image, y: image.y + 1 }))
                     .filter(image => image.y < Dimensions.get('window').height)
+            );
+        };
+
+        const moveGalaxies = () => {
+            setGalaxies(prevGalaxies =>
+                prevGalaxies.map(galaxy => ({ ...galaxy, y: galaxy.y + 1 }))
+                    .filter(galaxy => galaxy.y < Dimensions.get('window').height)
             );
         };
 
@@ -47,18 +64,34 @@ const Background = () => {
             require('../assets/sprites/bgObjects/star3red.png'),
         ];
 
-        const initialImages = generateInitialImages(starImageUrls, 15);
-        setImages(initialImages);
+        const galaxyImageUrls = [
+            require('../assets/sprites/bgObjects/blueGalaxy.png'),
+            require('../assets/sprites/bgObjects/orangeGalaxy.png'),
+            require('../assets/sprites/bgObjects/purpleGalaxy.png'),
+            require('../assets/sprites/bgObjects/redGalaxy.png'),
+        ];
 
-        const intervalId = setInterval(() => {
+        const initialStars = generateInitialImages(starImageUrls, 15);
+        setImages(initialStars);
+
+        const starIntervalId = setInterval(() => {
             const newStars = generateRandomImage(starImageUrls, 5);
             setImages(prevImages => [...prevImages, ...newStars]);
         }, 2000);
 
-        const moveIntervalId = setInterval(moveImages);
+        const galaxyIntervalId = setInterval(() => {
+            const newGalaxy = generateRandomGalaxy(galaxyImageUrls);
+            setGalaxies(prevGalaxies => [...prevGalaxies, newGalaxy]);
+        }, Math.random() * 8000 + 5000);
+
+        const moveIntervalId = setInterval(() => {
+            moveImages();
+            moveGalaxies();
+        }, 50);
 
         return () => {
-            clearInterval(intervalId);
+            clearInterval(starIntervalId);
+            clearInterval(galaxyIntervalId);
             clearInterval(moveIntervalId);
         };
     }, []);
@@ -70,6 +103,19 @@ const Background = () => {
                     key={index}
                     source={image.imageUrl}
                     style={{ position: 'absolute', left: image.x, top: image.y }}
+                />
+            ))}
+            {galaxies.map((galaxy, index) => (
+                <Image
+                    key={`galaxy-${index}`}
+                    source={galaxy.imageUrl}
+                    style={{
+                        position: 'absolute',
+                        left: galaxy.x,
+                        top: galaxy.y,
+                        transform: [{ rotate: `${galaxy.rotation}deg` }],
+                        opacity: 50,
+                    }}
                 />
             ))}
         </View>

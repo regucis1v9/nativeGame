@@ -14,30 +14,30 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {/*<Stack.Screen*/}
-        {/*  name="Loading"*/}
-        {/*  component={Loading}*/}
-        {/*  options={{ headerShown: false }} // Hide header for Loading screen*/}
-        {/*/>*/}
-        {/*<Stack.Screen*/}
-        {/*  name="Landing"*/}
-        {/*  component={Landing}*/}
-        {/*  options={{ headerShown: false }} // Hide header for Landing screen*/}
-        {/*/>*/}
-        {/*<Stack.Screen*/}
-        {/*  name="Game"*/}
-        {/*  component={Game}*/}
-        {/*  options={{ headerShown: false }} // Hide header for Landing screen*/}
-        {/*/>*/}
-        {/*<Stack.Screen*/}
-        {/*  name="Leaderboard"*/}
-        {/*  component={Leaderboard}*/}
-        {/*  options={{ headerShown: false }} // Hide header for Landing screen*/}
-        {/*/>*/}
         <Stack.Screen
-            name="background"
-            component={Background}
-            options={{ headerShown: false}}
+          name="Loading"
+          component={Loading}
+          options={{ headerShown: false }} // Hide header for Loading screen
+        />
+        <Stack.Screen
+          name="Landing"
+          component={Landing}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+          name="Game"
+          component={Game}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+          name="Leaderboard"
+          component={Leaderboard}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+          name="background"
+          component={Background}
+          options={{ headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

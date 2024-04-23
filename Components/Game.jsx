@@ -119,11 +119,6 @@ export default function Game() {
             const playerTop = y;
             const playerBottom = y + width;   
         });
-        obstacleRef.current.measureInWindow(( y ) => {
-            if( y > playerTop && y < playerBottom){
-                console.log("collision check");
-            }
-        });
       }
     };
 

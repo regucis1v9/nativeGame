@@ -6,6 +6,7 @@ import Loading from './Components/Loading';
 import Leaderboard from "./Components/Leaderboard"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
+import Background from "./Components/Background";
 
 export default function App() {
   const Stack = createNativeStackNavigator();
@@ -32,6 +33,11 @@ export default function App() {
           name="Leaderboard"
           component={Leaderboard}
           options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+          name="background"
+          component={Background}
+          options={{ headerShown: false}}
         />
       </Stack.Navigator>
     </NavigationContainer>

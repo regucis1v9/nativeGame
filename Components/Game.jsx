@@ -12,6 +12,8 @@ export default function Game() {
   const scoreRef = useRef(0);
   const gifWrapperPositionRef = useRef({ x: 0, y: 0 });
   const gifWrapperRef = useRef(null);
+  const obstacleRef = useRef(null);
+
 
   const handlePressLeft = () => {
     if (playerLocationRef.current !== 'left') {
@@ -87,31 +89,40 @@ export default function Game() {
     if (justifyClass === 'justify-between') {
       return (
         <>
-          <View className="w-1/3 h-20 bg-white"></View>
+          <View ref={obstacleRef} className="w-1/3 h-20 bg-white"></View>
           <View className="w-1/3 h-20 bg-white"></View>
         </>
       );
     } else if (justifyClass === 'justify-center') {
-      return <View className="w-1/3 h-20 bg-blue-500"></View>;
+      return (
+        <>
+          <View ref={obstacleRef} className="w-1/3 h-20 bg-blue-500"></View>
+        </>
+      );
     } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
       return (
         <>
-          <View className="w-1/3 h-20 bg-red-500"></View>
-          <View className="w-1/3 h-20 bg-red-500"></View>
+          <View ref={obstacleRef} className="w-2/3 h-20 bg-red-500"></View>
         </>
       );
     } else {
       return null;
     }
   };
+  
 
   useEffect(() => {
     const updateWrapperPosition = () => {
       if (gifWrapperRef.current) {
         gifWrapperRef.current.measureInWindow((x, y, height, width) => {
-          gifWrapperPositionRef.current = { x, y, height, width };
-        //   console.log('GIF wrapper X:', x , "Player location", playerLocation, "element height", width, "element width", height);
-          console.log("top-left", y ,x, "top-right", y ,x + height, "bottom-left", y+width ,x, "bottom-right", y+width ,x + height )
+          gifWrapperPositionRef.current = { x, y, height, width };  
+            const playerTop = y;
+            const playerBottom = y + width;   
+        });
+        obstacleRef.current.measureInWindow(( y ) => {
+            if( y > playerTop && y < playerBottom){
+                console.log("collision check");
+            }
         });
       }
     };

@@ -6,8 +6,11 @@ import sunImage from '../assets/sprites/obstacles/sunx2.png';
 import saturnImage from '../assets/sprites/obstacles/saturnx2.png';
 import earthImage from '../assets/sprites/obstacles/earthx2.png';
 import jupiterImage from '../assets/sprites/obstacles/jupiterx2.png';
+import heartFullImage from '../assets/sprites/hearts/heartx2.png';
+import heartEmptyImage from '../assets/sprites/hearts/heart_empty2x2.png';
 
 export default function Game() {
+  const [isGameOver, setIsGameOver] = useState(false);
   const playerLocationRef = useRef('middle');
   const [playerLocation, setPlayerLocation] = useState('middle');
   const [transitionValue] = useState(new Animated.Value(0));
@@ -21,24 +24,38 @@ export default function Game() {
   const [freeSpace, setFreeSpace] = useState([]);
   const freeSpaceRef = useRef([]);
   const obstacleImageRef = useRef();
+  const healthRef = useRef(3); // Use useRef for health
+  const collisionDetectedRef = useRef(false); // Ref to track if collision has been detected
+  const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
 
   useEffect(() => {
-    const scoreTimer = setInterval(() => {
-      setScore(prevScore => prevScore + 1);
-    }, 550); 
+    scoreTimerRef.current = setInterval(() => {
+      setScore(prevScore => (isGameOver ? prevScore : prevScore + 1)); // Stop score increment when game is over
+    }, 550);
   
-    return () => clearInterval(scoreTimer); // Clean up the timer
-  }, []);
-
+    return () => clearInterval(scoreTimerRef.current); // Clean up the timer
+  }, [isGameOver]);
+  
+  const handlePause = () => {
+    console.log('gejs')
+    clearInterval(scoreTimerRef.current); 
+    boxTransitionValue.stopAnimation();
+    console.log(boxTransitionValue)
+  };
   const handlePressLeft = () => {
+    if(isGameOver){
+      return
+    }
     if (playerLocationRef.current !== 'left') {
       setPlayerLocation(prevLocation =>
         prevLocation === 'middle' ? 'left' : 'middle'
       );
     }
   };
-
   const handlePressRight = () => {
+    if(isGameOver){
+      return
+    }
     if (playerLocationRef.current !== 'right') {
       setPlayerLocation(prevLocation =>
         prevLocation === 'middle' ? 'right' : 'middle'
@@ -57,23 +74,27 @@ export default function Game() {
   playerLocationRef.current = playerLocation;
 
   const getRandomJustifyClass = () => {
-    const randomNum = Math.floor(Math.random() * 3) + 1;
-
-    if (randomNum === 1) {
+    const randomNum = Math.random();
+  
+    // Adjusted probabilities
+    if (randomNum < 0.2) {
       return 'justify-start';
-    } else if (randomNum === 2) {
+    } else if (randomNum < 0.4) {
+      return 'justify-end';
+    } else {
       const pairMade = Math.random() < 0.5;
       if (pairMade) {
         return 'justify-between';
       } else {
         return 'justify-center';
       }
-    } else {
-      return 'justify-end';
     }
   };
 
   useEffect(() => {
+    if(isGameOver){
+      return;
+    }
     if (!animationStarted) {
       setTimeout(() => {
         setAnimationStarted(true);
@@ -83,7 +104,7 @@ export default function Game() {
         setJustifyClass(getRandomJustifyClass());
         Animated.timing(boxTransitionValue, {
           toValue: 1,
-          duration: 2000,
+          duration: 1800,
           useNativeDriver: true,
         }).start(() => {
           boxTransitionValue.setValue(0);
@@ -118,14 +139,31 @@ export default function Game() {
     else if(justifyClass === "justify-end"){
       setFreeSpace(['left']);
     }
-    const selectRandomImage = () => {
-      obstacleImageRef.current = allImages[Math.floor(Math.random() * allImages.length)];
-    };
+const selectRandomImage = () => {
+  const randomNum = Math.random();
+
+  if (randomNum < 0.2) {
+    obstacleImageRef.current = earthImage; // 20% chance for Earth
+  } else {
+    // The remaining 80% is split between Sun, Saturn, and Jupiter
+    const remainingRandom = Math.random() * 0.8;
+
+    if (remainingRandom < 0.267) {
+      obstacleImageRef.current = sunImage; // 33.33% chance for Sun
+    } else if (remainingRandom < 0.533) {
+      obstacleImageRef.current = saturnImage; // 33.33% chance for Saturn
+    } else {
+      obstacleImageRef.current = jupiterImage; // 33.33% chance for Jupiter
+    }
+  }
+};
+
+    
     selectRandomImage();
   };
 
 const renderBlackBoxes = () => {
-  console.log(obstacleImageRef.current)
+  collisionDetectedRef.current = false;
     if (justifyClass === 'justify-between') {
         return (
             <>
@@ -159,48 +197,77 @@ const renderBlackBoxes = () => {
     freeSpaceRef.current = freeSpace;
   }, [freeSpace]);
 
-  useEffect(() => {
-    let collisionOccurred = false; // Flag to track collision
-    const updateWrapperPosition = () => {
-      if (gifWrapperRef.current && obstacleRef.current) {
-        gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
-          const playerTop = y1;
-          const playerBottom = y1 + height1;
+ useEffect(() => {
+  const updateWrapperPosition = () => {
+    if (gifWrapperRef.current && obstacleRef.current && !isGameOver) {
+      gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
+        const playerTop = y1;
+        const playerBottom = y1 + height1;
+        
+        obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
+          const obstacleTop = y2;
+          const obstacleBottom = obstacleTop + height2;
           
-          obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
-            const obstacleTop = y2;
-            const obstacleBottom = obstacleTop + height2;
-            
-            if (playerTop < obstacleBottom && playerBottom > obstacleTop) {
-              if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
-                console.log('collision');
-                collisionOccurred = true; // Set collision flag to true
+          if (
+            playerTop < obstacleBottom &&
+            playerBottom > obstacleTop &&
+            !collisionDetectedRef.current // Ensure collision is not already detected
+          ) {
+            if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
+              collisionDetectedRef.current = true; 
+              let damage = 0;
+              if (obstacleImageRef.current === 1) {
+                damage = -3;
+              }
+              if (obstacleImageRef.current === 2 || obstacleImageRef.current === 4) {
+                damage = -2;
+              }
+              if (obstacleImageRef.current === 3) {
+                damage = +1;
+              }
+
+              healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); // Cap between 0 and 3
+              console.log(healthRef.current);
+              if (healthRef.current === 0) { // Check if health reaches zero
+                setIsGameOver(true)
               }
             }
-          });
+          } else {
+            collisionDetectedRef.current = false; // Reset the collision detection flag if no collision detected
+          }
         });
-      }
-    };
-    
-    const intervalId = setInterval(updateWrapperPosition, 50); 
+      });
+    }
+  };
   
-    return () => clearInterval(intervalId);
-  }, []);
-  
-  
+  const intervalId = setInterval(updateWrapperPosition, 75); 
 
+  return () => clearInterval(intervalId);
+}, [isGameOver]);
+
+
+  const hearts = Array.from({ length: 3 }, (_, index) => {
+    if (index < healthRef.current) {
+      return <Image key={index} source={heartFullImage} />;
+    } else {
+      return <Image key={index} source={heartEmptyImage} />;
+    }
+  });
   return (
     <>
     <View className="flex-1 items-center w-screen z-10 absolute">
+      <Pressable onPressIn={handlePause} className="z-30">
+        <View className="absolute top-16  flex gap-3 flex-row z-20">
+          <Text className="text-white text-center ">| |</Text>
+        </View>
+      </Pressable>
       <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">
-        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
-        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
-        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
+        {hearts}
       </View>
-      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end">
+      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end z-20">
         <Text className="text-white text-center mb-20">Left</Text>
       </Pressable>
-      <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end">
+      <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end z-20">
         <Text className="text-white text-center mb-20">Right</Text>
       </Pressable>
       <Text className="absolute top-16 right-10 color-white z-20" >Score: {score}</Text>
@@ -221,7 +288,7 @@ const renderBlackBoxes = () => {
           className={`w-full absolute ${justifyClass}`}
           style={{ top: 0, left: 0, flexDirection: 'row' }}
         >
-          {renderBlackBoxes()}
+        {!isGameOver && renderBlackBoxes()}
         </View>
       </Animated.View>
       <Animated.View

@@ -2,6 +2,10 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Animated, Image, Text, Pressable, NativeModules } from 'react-native';
 import 'tailwindcss/tailwind.css';
 import Background from './Background';
+import sunImage from '../assets/sprites/obstacles/sunx2.png';
+import saturnImage from '../assets/sprites/obstacles/saturnx2.png';
+import earthImage from '../assets/sprites/obstacles/earthx2.png';
+import jupiterImage from '../assets/sprites/obstacles/jupiterx2.png';
 
 export default function Game() {
   const playerLocationRef = useRef('middle');
@@ -16,6 +20,7 @@ export default function Game() {
   const obstacleRef = useRef(null);
   const [freeSpace, setFreeSpace] = useState([]);
   const freeSpaceRef = useRef([]);
+  const obstacleImageRef = useRef();
 
   useEffect(() => {
     const scoreTimer = setInterval(() => {
@@ -94,6 +99,8 @@ export default function Game() {
     }
   }, [animationStarted, boxTransitionValue]);
 
+  const allImages = [sunImage, saturnImage, earthImage, jupiterImage];
+
   useEffect(() => {
     updateFreeSpaces(justifyClass);
   }, [justifyClass]);
@@ -111,32 +118,42 @@ export default function Game() {
     else if(justifyClass === "justify-end"){
       setFreeSpace(['left']);
     }
+    const selectRandomImage = () => {
+      obstacleImageRef.current = allImages[Math.floor(Math.random() * allImages.length)];
+    };
+    selectRandomImage();
   };
-  
-  const renderBlackBoxes = () => {
+
+const renderBlackBoxes = () => {
+  console.log(obstacleImageRef.current)
     if (justifyClass === 'justify-between') {
-      return (
-        <>
-          <View ref={obstacleRef} className="w-1/3 h-20 bg-white"></View>
-          <View className="w-1/3 h-20 bg-white"></View>
-        </>
-      );
+        return (
+            <>
+                <View ref={obstacleRef} className="w-1/3  aspect-square z-10 flex items-center justify-center">
+                    <Image className="w-full h-full" source={obstacleImageRef.current} />
+                </View>
+                <View className="w-1/3  aspect-square z-10 flex items-center justify-center">
+                    <Image className="w-full h-full" source={obstacleImageRef.current} />
+                </View>
+            </>
+        );
     } else if (justifyClass === 'justify-center') {
-      return (
-        <>
-          <View ref={obstacleRef} className="w-1/3 h-20 bg-blue-500"></View>
-        </>
-      );
+        return (
+            <View ref={obstacleRef} className="w-1/3  aspect-square z-10 flex items-center justify-center">
+                <Image className="w-full h-full" source={obstacleImageRef.current} />
+            </View>
+        );
     } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
-      return (
-        <>
-          <View ref={obstacleRef} className="w-2/3 h-20 bg-red-500"></View>
-        </>
-      );
+        return (
+            <View ref={obstacleRef} className="w-2/3 aspect-square z-10">
+                <Image className="w-full h-full" source={obstacleImageRef.current} />
+            </View>
+        );
     } else {
-      return null;
+        return null;
     }
-  };
+};
+
   
   useEffect(() => {
     freeSpaceRef.current = freeSpace;
@@ -175,13 +192,18 @@ export default function Game() {
   return (
     <>
     <View className="flex-1 items-center w-screen z-10 absolute">
+      <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">
+        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
+        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
+        <Image source={require('../assets/sprites/hearts/heartx2.png')}/>
+      </View>
       <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end">
         <Text className="text-white text-center mb-20">Left</Text>
       </Pressable>
       <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end">
         <Text className="text-white text-center mb-20">Right</Text>
       </Pressable>
-      <Text className="absolute top-16 right-10 color-white" >Score: {score}</Text>
+      <Text className="absolute top-16 right-10 color-white z-20" >Score: {score}</Text>
       <Animated.View
         className="w-full"
         style={{
@@ -189,7 +211,7 @@ export default function Game() {
             {
               translateY: boxTransitionValue.interpolate({
                 inputRange: [0, 1],
-                outputRange: [-80, 1000],
+                outputRange: [-270, 1000],
               }),
             },
           ],

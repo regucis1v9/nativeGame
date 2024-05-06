@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { View, Animated, Image, Text, Pressable, NativeModules } from 'react-native';
 import 'tailwindcss/tailwind.css';
+import Background from './Background';
 
 export default function Game() {
   const playerLocationRef = useRef('middle');
@@ -9,13 +10,20 @@ export default function Game() {
   const [boxTransitionValue] = useState(new Animated.Value(0));
   const [justifyClass, setJustifyClass] = useState('justify-between');
   const [animationStarted, setAnimationStarted] = useState(false);
-  const scoreRef = useRef(0);
+  const [score, setScore] = useState(0);
   const gifWrapperPositionRef = useRef({ x: 0, y: 0 });
   const gifWrapperRef = useRef(null);
   const obstacleRef = useRef(null);
   const [freeSpace, setFreeSpace] = useState([]);
   const freeSpaceRef = useRef([]);
 
+  useEffect(() => {
+    const scoreTimer = setInterval(() => {
+      setScore(prevScore => prevScore + 1);
+    }, 550); 
+  
+    return () => clearInterval(scoreTimer); // Clean up the timer
+  }, []);
 
   const handlePressLeft = () => {
     if (playerLocationRef.current !== 'left') {
@@ -73,7 +81,6 @@ export default function Game() {
           duration: 2000,
           useNativeDriver: true,
         }).start(() => {
-          scoreRef.current += 1;
           boxTransitionValue.setValue(0);
           animateBlock();
         });
@@ -166,14 +173,15 @@ export default function Game() {
   
 
   return (
-    <View className="flex-1 items-center bg-gray-900 w-screen">
+    <>
+    <View className="flex-1 items-center w-screen z-10 absolute">
       <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end">
-        <Text className="text-white bg-blue-500 p-10 text-center mb-20">Left</Text>
+        <Text className="text-white text-center mb-20">Left</Text>
       </Pressable>
       <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end">
-        <Text className="text-white bg-blue-500 p-10 text-center mb-20">Right</Text>
+        <Text className="text-white text-center mb-20">Right</Text>
       </Pressable>
-      <Text className="absolute top-16 right-10 color-white" >Score: {scoreRef.current}</Text>
+      <Text className="absolute top-16 right-10 color-white" >Score: {score}</Text>
       <Animated.View
         className="w-full"
         style={{
@@ -207,12 +215,16 @@ export default function Game() {
             },
           ],
         }}
-        className="flex-1 justify-end items-center w-1/3 "
+        className="flex-1 justify-end items-center w-1/3 h-screen"
       >
-        <View style={{ marginBottom: 200 }}   ref={gifWrapperRef} className="bg-white">
+        <View style={{ marginBottom: 200 }}   ref={gifWrapperRef} >
           <Image source={require('../assets/sprites/ships/ship-blue.gif')} />
         </View>
       </Animated.View>
     </View>
+    <View className="absolute w-screen h-screen z-0">
+        <Background/>
+    </View>
+    </>
   );
 }

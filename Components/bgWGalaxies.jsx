@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, Dimensions } from 'react-native';
 
-const Background = () => {
+const BackgroundGalaxies = () => {
     const [images, setImages] = useState([]);
     const [galaxies, setGalaxies] = useState([]);
 
@@ -122,4 +122,4 @@ const Background = () => {
     );
 };
 
-export default Background;
+export default BackgroundGalaxies;

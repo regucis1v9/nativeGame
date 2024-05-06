@@ -13,6 +13,8 @@ export default function Game() {
   const gifWrapperPositionRef = useRef({ x: 0, y: 0 });
   const gifWrapperRef = useRef(null);
   const obstacleRef = useRef(null);
+  const [freeSpace, setFreeSpace] = useState([]);
+  const freeSpaceRef = useRef([]);
 
 
   const handlePressLeft = () => {
@@ -85,6 +87,25 @@ export default function Game() {
     }
   }, [animationStarted, boxTransitionValue]);
 
+  useEffect(() => {
+    updateFreeSpaces(justifyClass);
+  }, [justifyClass]);
+  
+  const updateFreeSpaces = (justifyClass) => {
+    if(justifyClass === 'justify-between'){
+      setFreeSpace(['middle']);
+    }
+    else if(justifyClass === "justify-center"){
+      setFreeSpace(['left', 'right']);
+    }
+    else if(justifyClass === "justify-start"){
+      setFreeSpace(['right']);
+    }
+    else if(justifyClass === "justify-end"){
+      setFreeSpace(['left']);
+    }
+  };
+  
   const renderBlackBoxes = () => {
     if (justifyClass === 'justify-between') {
       return (
@@ -110,22 +131,39 @@ export default function Game() {
     }
   };
   
+  useEffect(() => {
+    freeSpaceRef.current = freeSpace;
+  }, [freeSpace]);
 
   useEffect(() => {
+    let collisionOccurred = false; // Flag to track collision
     const updateWrapperPosition = () => {
-      if (gifWrapperRef.current) {
-        gifWrapperRef.current.measureInWindow((x, y, height, width) => {
-          gifWrapperPositionRef.current = { x, y, height, width };  
-            const playerTop = y;
-            const playerBottom = y + width;   
+      if (gifWrapperRef.current && obstacleRef.current) {
+        gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
+          const playerTop = y1;
+          const playerBottom = y1 + height1;
+          
+          obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
+            const obstacleTop = y2;
+            const obstacleBottom = obstacleTop + height2;
+            
+            if (playerTop < obstacleBottom && playerBottom > obstacleTop) {
+              if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
+                console.log('collision');
+                collisionOccurred = true; // Set collision flag to true
+              }
+            }
+          });
         });
       }
     };
-
-    const intervalId = setInterval(updateWrapperPosition, 100); // Check position periodically
-
+    
+    const intervalId = setInterval(updateWrapperPosition, 50); 
+  
     return () => clearInterval(intervalId);
-  }, [playerLocation]);
+  }, []);
+  
+  
 
   return (
     <View className="flex-1 items-center bg-gray-900 w-screen">

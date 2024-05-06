@@ -6,10 +6,16 @@ import sunImage from '../assets/sprites/obstacles/sunx2.png';
 import saturnImage from '../assets/sprites/obstacles/saturnx2.png';
 import earthImage from '../assets/sprites/obstacles/earthx2.png';
 import jupiterImage from '../assets/sprites/obstacles/jupiterx2.png';
+import asteroidImage from "../assets/sprites/obstacles/asteroidx2.png"
+import blackImage from "../assets/sprites/obstacles/blackHole.png"
 import heartFullImage from '../assets/sprites/hearts/heartx2.png';
 import heartEmptyImage from '../assets/sprites/hearts/heart_empty2x2.png';
+import homeButton from "../assets/sprites/buttons/homeButton.png"
+import { useNavigation } from '@react-navigation/native';
 
 export default function Game() {
+
+  const navigation = useNavigation();
   const [isGameOver, setIsGameOver] = useState(false);
   const playerLocationRef = useRef('middle');
   const [playerLocation, setPlayerLocation] = useState('middle');
@@ -37,11 +43,11 @@ export default function Game() {
   }, [isGameOver]);
   
   const handlePause = () => {
-    console.log('gejs')
-    clearInterval(scoreTimerRef.current); 
+    navigation.navigate('Landing'); // Navigate back to the 'Landing' screen
+    clearInterval(scoreTimerRef.current);
     boxTransitionValue.stopAnimation();
-    console.log(boxTransitionValue)
   };
+
   const handlePressLeft = () => {
     if(isGameOver){
       return
@@ -139,24 +145,30 @@ export default function Game() {
     else if(justifyClass === "justify-end"){
       setFreeSpace(['left']);
     }
-const selectRandomImage = () => {
-  const randomNum = Math.random();
-
-  if (randomNum < 0.2) {
-    obstacleImageRef.current = earthImage; // 20% chance for Earth
-  } else {
-    // The remaining 80% is split between Sun, Saturn, and Jupiter
-    const remainingRandom = Math.random() * 0.8;
-
-    if (remainingRandom < 0.267) {
-      obstacleImageRef.current = sunImage; // 33.33% chance for Sun
-    } else if (remainingRandom < 0.533) {
-      obstacleImageRef.current = saturnImage; // 33.33% chance for Saturn
-    } else {
-      obstacleImageRef.current = jupiterImage; // 33.33% chance for Jupiter
-    }
-  }
-};
+    const selectRandomImage = () => {
+      const randomNum = Math.random();
+    
+      if (randomNum < 0.1) {
+        obstacleImageRef.current = blackImage; // 10% chance for Black Hole
+      } else if (randomNum < 0.2) {
+        obstacleImageRef.current = earthImage; // 10% chance for Earth
+      } else if (randomNum < 0.4) {
+        obstacleImageRef.current = sunImage; // 20% chance for Sun
+      } else {
+        // The remaining 60% is split between Saturn, Jupiter, and Asteroid
+        const remainingRandom = Math.random() * 0.6;
+    
+        if (remainingRandom < 0.25) {
+          obstacleImageRef.current = saturnImage; // 25% chance for Saturn
+        } else if (remainingRandom < 0.5) {
+          obstacleImageRef.current = jupiterImage; // 25% chance for Jupiter
+        } else {
+          obstacleImageRef.current = asteroidImage; // 50% chance for Asteroid
+        }
+      }
+    };
+    
+    
 
     
     selectRandomImage();
@@ -167,30 +179,31 @@ const renderBlackBoxes = () => {
     if (justifyClass === 'justify-between') {
         return (
             <>
-                <View ref={obstacleRef} className="w-1/3  aspect-square z-10 flex items-center justify-center">
-                    <Image className="w-full h-full" source={obstacleImageRef.current} />
+                <View ref={obstacleRef} className="w-1/3 h-28 z-10 flex items-center justify-center ">
+                    <Image className="object-cover object-center" source={obstacleImageRef.current} />
                 </View>
-                <View className="w-1/3  aspect-square z-10 flex items-center justify-center">
-                    <Image className="w-full h-full" source={obstacleImageRef.current} />
+                <View className="w-1/3 h-28 z-10 flex items-center justify-center">
+                    <Image className="object-cover object-center" source={obstacleImageRef.current} />
                 </View>
             </>
         );
     } else if (justifyClass === 'justify-center') {
         return (
-            <View ref={obstacleRef} className="w-1/3  aspect-square z-10 flex items-center justify-center">
-                <Image className="w-full h-full" source={obstacleImageRef.current} />
+            <View ref={obstacleRef} className="w-1/3 h-28  z-10 flex items-center justify-center ">
+                <Image className="object-cover object-center" source={obstacleImageRef.current} />
             </View>
         );
     } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
         return (
-            <View ref={obstacleRef} className="w-2/3 aspect-square z-10">
-                <Image className="w-full h-full" source={obstacleImageRef.current} />
+            <View ref={obstacleRef} className="w-2/3 z-10 flex items-center justify-center">
+                <Image className="object-cover object-center scale-150 " source={obstacleImageRef.current} />
             </View>
         );
     } else {
         return null;
     }
 };
+
 
   
   useEffect(() => {
@@ -216,16 +229,18 @@ const renderBlackBoxes = () => {
             if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
               collisionDetectedRef.current = true; 
               let damage = 0;
-              if (obstacleImageRef.current === 1) {
-                damage = -3;
+              if (obstacleImageRef.current === earthImage) {
+                damage = 1; // Earth: heal 1 health point
+              } else if (obstacleImageRef.current === sunImage) {
+                damage = -3; // Sun: deduct 3 health points
+              } else if (obstacleImageRef.current === asteroidImage) {
+                damage = -1; // Asteroid: deduct 1 health point
+              } else if (obstacleImageRef.current === saturnImage || obstacleImageRef.current === jupiterImage) {
+                damage = -2; // Saturn or Jupiter: deduct 2 health points
+              } else if (obstacleImageRef.current === blackImage) {
+                healthRef.current = 0; // Black Hole: instantly set health to 0
               }
-              if (obstacleImageRef.current === 2 || obstacleImageRef.current === 4) {
-                damage = -2;
-              }
-              if (obstacleImageRef.current === 3) {
-                damage = +1;
-              }
-
+  
               healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); // Cap between 0 and 3
               console.log(healthRef.current);
               if (healthRef.current === 0) { // Check if health reaches zero
@@ -239,6 +254,7 @@ const renderBlackBoxes = () => {
       });
     }
   };
+  
   
   const intervalId = setInterval(updateWrapperPosition, 75); 
 
@@ -258,7 +274,7 @@ const renderBlackBoxes = () => {
     <View className="flex-1 items-center w-screen z-10 absolute">
       <Pressable onPressIn={handlePause} className="z-30">
         <View className="absolute top-16  flex gap-3 flex-row z-20">
-          <Text className="text-white text-center ">| |</Text>
+          <Image source={homeButton}/>
         </View>
       </Pressable>
       <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">

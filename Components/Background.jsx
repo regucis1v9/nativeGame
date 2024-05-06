@@ -64,7 +64,7 @@ const Background = () => {
     }, []);
 
     return (
-        <View className="flex-1 bg-black">
+        <View className="flex-1 bg-black z-0">
             {images.map((image, index) => (
                 <Image
                     key={index}

@@ -36,6 +36,16 @@ export default function Game() {
   const healthRef = useRef(3); // Use useRef for health
   const collisionDetectedRef = useRef(false); // Ref to track if collision has been detected
   const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
+  const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
+  const [buttonSound, setButtonSound] = useState(null); // State for button click sound
+
+    useEffect(() => {
+        async function loadButtonClickSound() {
+            const { sound } = await Audio.Sound.createAsync(
+                require('../assets/sounds/dodge.wav')
+            );
+            setButtonSound(sound); // Store the button click sound in state
+        }
 
   async function loadFont() {
     try {

@@ -108,11 +108,11 @@ export default function Loading({ navigation }) {
                     style={{
                         fontFamily: 'PixelifySans',
                         color: '#FCB700',
-                        fontSize: 'small',
                         marginTop: 4,
                         textTransform: 'uppercase',
                         opacity: 0.75,
                     }}
+                    classname="font-s"
                 >
                     Press anywhere to continue
                 </Text>

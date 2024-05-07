@@ -12,9 +12,11 @@ import heartFullImage from '../assets/sprites/hearts/heartx2.png';
 import heartEmptyImage from '../assets/sprites/hearts/heart_empty2x2.png';
 import homeButton from "../assets/sprites/buttons/homeButton.png";
 import homeButtonx5 from "../assets/sprites/buttons/homeButtonx5.png";
+import Arrow from "../assets/Arrow.jpg"
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
-
+import  { Audio } from 'expo-av'
+ 
 
 export default function Game() {
 
@@ -56,10 +58,10 @@ export default function Game() {
       console.error('Error loading font:', error);
     }
   }
-  
 
   useEffect(() => { 
       loadFont();
+      loadButtonClickSound();
   }, []);
 
   useEffect(() => {
@@ -323,11 +325,12 @@ const renderBlackBoxes = () => {
       <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">
         {hearts}
       </View>
-      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end z-20">
-        <Text className="text-white text-center mb-20">Left</Text>
+      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center z-20">
+        {/* <Text className="text-white text-center mb-20">Left</Text> */}
+        <Image className="mb-20 scale-x-[-1] scale-75"  source={Arrow}/>
       </Pressable>
       <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end z-20">
-        <Text className="text-white text-center mb-20">Right</Text>
+        <Image className="mb-20 scale-75" source={Arrow}/>
       </Pressable>
       <Text style={{ fontFamily: "PixelifySans" }} className="absolute top-16 right-10 color-white z-20" >Score: {score}</Text>
       <Animated.View

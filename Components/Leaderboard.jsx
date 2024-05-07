@@ -3,6 +3,7 @@ import { View, Text, Pressable, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
+import Background from './Background';
 import 'tailwindcss/tailwind.css';
 
 export default function Leaderboard() {
@@ -65,7 +66,8 @@ export default function Leaderboard() {
     ];
 
     return (
-        <View className="flex-1 justify-center items-center bg-gray-900">
+        <>
+        <View className="flex-1 justify-center items-center z-10">
             {fontLoaded && (
                 <View>
                     <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-4xl">Leaderboard</Text>
@@ -91,5 +93,9 @@ export default function Leaderboard() {
                 </View>
             )}
         </View>
+        <View className="absolute w-screen h-screen z-0">
+            <Background/>
+        </View>
+        </>
     );
 }

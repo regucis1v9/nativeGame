@@ -18,7 +18,7 @@ export default function Game() {
     useEffect(() => {
         async function loadButtonClickSound() {
             const { sound } = await Audio.Sound.createAsync(
-                require('../assets/sounds/dodge.mp3')
+                require('../assets/sounds/dodge.wav')
             );
             setButtonSound(sound); // Store the button click sound in state
         }
@@ -157,11 +157,11 @@ export default function Game() {
 
   return (
     <View className="flex-1 items-center bg-gray-900 w-screen">
-        <Pressable onPressIn={handlePressLeft} onPress={playButtonClickSound} className="h-screen absolute left-0 w-1/2 flex-1 justify-end">
-            <Text className="text-white bg-blue-500 p-10 text-center mb-20">Left</Text>
+        <Pressable onPressIn={handlePressLeft} onPress={playButtonClickSound} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center">
+            <Image source={require('../assets/Arrow.jpg')} className="rotate-180 mb-10"></Image>
         </Pressable>
-        <Pressable onPressIn={handlePressRight} onPress={playButtonClickSound} className="h-screen absolute right-0 w-1/2 flex-1 justify-end">
-            <Text className="text-white bg-blue-500 p-10 text-center mb-20">Right</Text>
+        <Pressable onPressIn={handlePressRight} onPress={playButtonClickSound} className="h-screen absolute right-0 w-1/2 flex-1 justify-end items-center">
+            <Image source={require('../assets/Arrow.jpg')} className="mb-10"></Image>
         </Pressable>
       <Text className="absolute top-16 right-10 color-white" >Score: {scoreRef.current}</Text>
       <Animated.View

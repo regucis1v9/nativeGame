@@ -3,7 +3,6 @@ import { View, Image, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native'; // Importing useFocusEffect
 import { Audio } from 'expo-av';
-
 export default function Landing() {
     const navigation = useNavigation();
     const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
@@ -68,7 +67,7 @@ export default function Landing() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    navigation.navigate('Game'); // Navigate to Game screen
+                    navigation.navigate('Game');
                 }}
             >
                 <Image
@@ -79,7 +78,7 @@ export default function Landing() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    navigation.navigate('Store'); // Navigate to Store screen
+                    navigation.navigate('Shop'); // Navigate to Store screen
                 }}
             >
                 <Image

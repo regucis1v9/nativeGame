@@ -39,14 +39,14 @@ export default function Game() {
   const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
   const [buttonSound, setButtonSound] = useState(null); // State for button click sound
 
-    useEffect(() => {
-        async function loadButtonClickSound() {
-            const { sound } = await Audio.Sound.createAsync(
-                require('../assets/sounds/dodge.wav')
-            );
-            setButtonSound(sound); // Store the button click sound in state
-        }
+  async function loadButtonClickSound() {
+    const { sound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/dodge.wav')
+    );
+    setButtonSound(sound); // Store the button click sound in state
+  }
 
+  
   async function loadFont() {
     try {
       await Font.loadAsync({
@@ -397,4 +397,4 @@ const renderBlackBoxes = () => {
     }
     </>
   );
-}
+  }

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, {useRef, useState, useEffect, useCallback} from 'react';
 import { View, Animated, Image, Text, Pressable, NativeModules } from 'react-native';
 import 'tailwindcss/tailwind.css';
 import Background from './Background';
@@ -12,9 +12,12 @@ import heartFullImage from '../assets/sprites/hearts/heartx2.png';
 import heartEmptyImage from '../assets/sprites/hearts/heart_empty2x2.png';
 import homeButton from "../assets/sprites/buttons/homeButton.png";
 import homeButtonx5 from "../assets/sprites/buttons/homeButtonx5.png";
+import Arrow from "../assets/Arrow.jpg"
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
-
+import  { Audio } from 'expo-av'
+import {useFocusEffect} from "@react-navigation/native";
+ 
 
 export default function Game() {
 
@@ -36,6 +39,8 @@ export default function Game() {
   const healthRef = useRef(3); // Use useRef for health
   const collisionDetectedRef = useRef(false); // Ref to track if collision has been detected
   const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
+  const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
+  const [buttonSound, setButtonSound] = useState(null); // State for button click sound
 
   async function loadFont() {
     try {
@@ -57,6 +62,54 @@ export default function Game() {
         await loadFont();
     })();
   }, []);
+
+  useEffect(() => {
+    async function loadButtonClickSound() {
+        const { sound } = await Audio.Sound.createAsync(
+            require('../assets/sounds/dodge.wav')
+        );
+        setButtonSound(sound); // Store the button click sound in state
+    }
+
+    loadButtonClickSound(); // Load the button click sound once
+
+    return () => {
+        if (buttonSound) {
+            buttonSound.unloadAsync(); // Unload button sound to free resources
+        }
+    };
+}, []); // Empty dependency array ensures this runs only once
+const playButtonClickSound = async () => {
+    if (buttonSound) {
+        await buttonSound.replayAsync(); // Play button sound on press
+    }
+};
+useFocusEffect(
+    useCallback(() => {
+        async function loadAndPlayBackgroundMusic() {
+            if (!backgroundSound) {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('../assets/sounds/game1.wav'),
+                    { isLooping: true }
+                );
+                setBackgroundSound(sound); // Store background sound
+                await sound.playAsync(); // Play the background music
+            }
+        }
+
+        async function stopBackgroundMusic() {
+            if (backgroundSound) {
+                await backgroundSound.stopAsync(); // Stop the background music
+            }
+        }
+
+        loadAndPlayBackgroundMusic(); // Play the background music when the page is focused
+
+        return () => {
+            stopBackgroundMusic(); // Stop the music when the page is unfocused
+        };
+    }, [backgroundSound]) // Only runs if backgroundSound state changes
+);
 
   useEffect(() => {
     scoreTimerRef.current = setInterval(() => {
@@ -82,6 +135,7 @@ export default function Game() {
     if(isGameOver){
       return
     }
+    playButtonClickSound();
     if (playerLocationRef.current !== 'left') {
       setPlayerLocation(prevLocation =>
         prevLocation === 'middle' ? 'left' : 'middle'
@@ -92,6 +146,7 @@ export default function Game() {
     if(isGameOver){
       return
     }
+    playButtonClickSound();
     if (playerLocationRef.current !== 'right') {
       setPlayerLocation(prevLocation =>
         prevLocation === 'middle' ? 'right' : 'middle'
@@ -313,11 +368,12 @@ const renderBlackBoxes = () => {
       <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">
         {hearts}
       </View>
-      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end z-20">
-        <Text className="text-white text-center mb-20">Left</Text>
+      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center z-20">
+        {/* <Text className="text-white text-center mb-20">Left</Text> */}
+        <Image className="mb-20 scale-x-[-1] scale-75"  source={Arrow}/>
       </Pressable>
       <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end z-20">
-        <Text className="text-white text-center mb-20">Right</Text>
+        <Image className="mb-20 scale-75" source={Arrow}/>
       </Pressable>
       <Text style={{ fontFamily: "PixelifySans" }} className="absolute top-16 right-10 color-white z-20" >Score: {score}</Text>
       <Animated.View
@@ -387,4 +443,4 @@ const renderBlackBoxes = () => {
     }
     </>
   );
-}
+  }

@@ -77,7 +77,6 @@ export default function Leaderboard() {
                             <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-xl">{user.score}</Text>
                         </View>
                     ))}
-                    {/* Button to navigate back to Landing */}
                     <Pressable
                         onPress={() => {
                             playButtonClickSound(); // Play sound on button press

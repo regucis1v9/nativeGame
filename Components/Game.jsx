@@ -30,14 +30,12 @@ export default function Game() {
   const [justifyClass, setJustifyClass] = useState('justify-between');
   const [animationStarted, setAnimationStarted] = useState(false);
   const [score, setScore] = useState(0);
-  const gifWrapperPositionRef = useRef({ x: 0, y: 0 });
-  const gifWrapperRef = useRef(null);
-  const obstacleRef = useRef(null);
+  const gifWrapperRef = useRef();
+  const obstacleRef = useRef();
   const [freeSpace, setFreeSpace] = useState([]);
   const freeSpaceRef = useRef([]);
   const obstacleImageRef = useRef();
   const healthRef = useRef(3); // Use useRef for health
-  const collisionDetectedRef = useRef(false); // Ref to track if collision has been detected
   const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
   const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
   const [buttonSound, setButtonSound] = useState(null); // State for button click sound
@@ -211,8 +209,6 @@ useFocusEffect(
     }
   }, [animationStarted, boxTransitionValue]);
 
-  const allImages = [sunImage, saturnImage, earthImage, jupiterImage];
-
   useEffect(() => {
     updateFreeSpaces(justifyClass);
   }, [justifyClass]);
@@ -259,97 +255,100 @@ useFocusEffect(
     selectRandomImage();
   };
 
-const renderBlackBoxes = () => {
-  collisionDetectedRef.current = false;
-    if (justifyClass === 'justify-between') {
-        return (
-            <>
-                <View ref={obstacleRef} className="w-1/3 h-28 z-10 flex items-center justify-center ">
-                    <Image className="object-cover object-center" source={obstacleImageRef.current} />
-                </View>
-                <View className="w-1/3 h-28 z-10 flex items-center justify-center">
-                    <Image className="object-cover object-center" source={obstacleImageRef.current} />
-                </View>
-            </>
-        );
-    } else if (justifyClass === 'justify-center') {
-        return (
-            <View ref={obstacleRef} className="w-1/3 h-28  z-10 flex items-center justify-center ">
-                <Image className="object-cover object-center" source={obstacleImageRef.current} />
-            </View>
-        );
-    } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
-        return (
-            <View ref={obstacleRef} className="w-2/3 z-10 flex items-center justify-center">
-                <Image className="object-cover object-center scale-150 " source={obstacleImageRef.current} />
-            </View>
-        );
-    } else {
-        return null;
+  const renderBlackBoxes = () => {
+    // Reset collided flag for the previous obstacle
+    if (obstacleRef.current) {
+      obstacleRef.current.collided = false;
     }
-};
-
-
+  
+    if (justifyClass === 'justify-between') {
+      return (
+        <>
+          <View ref={obstacleRef} className="w-1/3 h-28 z-10 flex items-center justify-center ">
+            <Image className="object-cover object-center" source={obstacleImageRef.current} />
+          </View>
+          <View className="w-1/3 h-28 z-10 flex items-center justify-center">
+            <Image className="object-cover object-center" source={obstacleImageRef.current} />
+          </View>
+        </>
+      );
+    } else if (justifyClass === 'justify-center') {
+      return (
+        <View ref={obstacleRef} className="w-1/3 h-28  z-10 flex items-center justify-center ">
+          <Image className="object-cover object-center" source={obstacleImageRef.current} />
+        </View>
+      );
+    } else if (justifyClass === 'justify-start' || justifyClass === 'justify-end') {
+      return (
+        <View ref={obstacleRef} className="w-2/3 z-10 flex items-center justify-evenly flex-row">
+          <Image className="object-cover object-center " source={obstacleImageRef.current} />
+          <Image className="object-cover object-center " source={obstacleImageRef.current} />
+        </View>
+      );
+    } else {
+      return null;
+    }
+  };  
   
   useEffect(() => {
     freeSpaceRef.current = freeSpace;
   }, [freeSpace]);
 
- useEffect(() => {
-  const updateWrapperPosition = () => {
-    if(isGameOver){
-      return;
-    }
-    if (gifWrapperRef.current && obstacleRef.current && !isGameOver) {
+  useEffect(() => {
+    const updateWrapperPosition = () => {
+  
+      if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
+        return;
+      }
       gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
         const playerTop = y1;
         const playerBottom = y1 + height1;
-        
-        obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
-          const obstacleTop = y2;
-          const obstacleBottom = obstacleTop + height2;
+      if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
+        return;
+      }
+      obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
+        const obstacleTop = y2;
+        const obstacleBottom = obstacleTop + height2;
           
-          if (
-            playerTop < obstacleBottom &&
-            playerBottom > obstacleTop &&
-            !collisionDetectedRef.current // Ensure collision is not already detected
-          ) {
+          // Check collision only if obstacle is within player's vicinity
+          if (playerTop < obstacleBottom && playerBottom > obstacleTop) {
             if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
-              collisionDetectedRef.current = true; 
               let damage = 0;
-              if (obstacleImageRef.current === earthImage) {
-                damage = 1; // Earth: heal 1 health point
-              } else if (obstacleImageRef.current === sunImage) {
-                damage = -3; // Sun: deduct 3 health points
-              } else if (obstacleImageRef.current === asteroidImage) {
-                damage = -1; // Asteroid: deduct 1 health point
-              } else if (obstacleImageRef.current === saturnImage || obstacleImageRef.current === jupiterImage) {
-                damage = -2; // Saturn or Jupiter: deduct 2 health points
-              } else if (obstacleImageRef.current === blackImage) {
-                healthRef.current = 0; // Black Hole: instantly set health to 0
-              }
-  
-              healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); // Cap between 0 and 3
-              console.log(healthRef.current);
-              if (healthRef.current === 0) { // Check if health reaches zero
-                setIsGameOver(true)
+              if (!obstacleRef.current.collided) { // Check if obstacle has already collided
+                obstacleRef.current.collided = true; // Set collided flag
+                
+                if (obstacleImageRef.current === earthImage) {
+                  damage = 1; // Earth: heal 1 health point
+                } else if (obstacleImageRef.current === sunImage) {
+                  damage = -3; // Sun: deduct 3 health points
+                } else if (obstacleImageRef.current === asteroidImage) {
+                  damage = -1; // Asteroid: deduct 1 health point
+                } else if (obstacleImageRef.current === saturnImage || obstacleImageRef.current === jupiterImage) {
+                  damage = -2; // Saturn or Jupiter: deduct 2 health points
+                } else if (obstacleImageRef.current === blackImage) {
+                  healthRef.current = 0; // Black Hole: instantly set health to 0
+                }
+                
+                healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); // Cap between 0 and 3
+                console.log(healthRef.current);
+                
+                if (healthRef.current === 0) { // Check if health reaches zero
+                  setIsGameOver(true);
+                }
               }
             }
           } else {
-            collisionDetectedRef.current = false; // Reset the collision detection flag if no collision detected
+            obstacleRef.current.collided = false; // Reset collided flag when obstacle moves out of player's vicinity
           }
         });
       });
-    }
-  };
+    };
+    
+    const intervalId = setInterval(updateWrapperPosition, 1000/120);
+    
+    return () => clearInterval(intervalId);
+  }, [isGameOver]);
   
-  
-  const intervalId = setInterval(updateWrapperPosition, 75); 
-
-  return () => clearInterval(intervalId);
-}, [isGameOver]);
-
-
   const hearts = Array.from({ length: 3 }, (_, index) => {
     if (index < healthRef.current) {
       return <Image key={index} source={heartFullImage} />;
@@ -369,7 +368,6 @@ const renderBlackBoxes = () => {
         {hearts}
       </View>
       <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center z-20">
-        {/* <Text className="text-white text-center mb-20">Left</Text> */}
         <Image className="mb-20 scale-x-[-1] scale-75"  source={Arrow}/>
       </Pressable>
       <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end z-20">

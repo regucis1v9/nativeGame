@@ -17,7 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import  { Audio } from 'expo-av'
 import {useFocusEffect} from "@react-navigation/native";
- 
+
 
 export default function Game() {
 
@@ -39,6 +39,7 @@ export default function Game() {
   const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
   const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
   const [buttonSound, setButtonSound] = useState(null); // State for button click sound
+  const [gameOverSound, setGameOverSound] = useState(null); // Game over music
 
   async function loadFont() {
     try {
@@ -49,9 +50,9 @@ export default function Game() {
       console.error('Error loading font:', error);
     }
   }
-  
 
-  useEffect(() => { 
+
+  useEffect(() => {
       loadFont();
   }, []);
 
@@ -113,22 +114,36 @@ useFocusEffect(
     scoreTimerRef.current = setInterval(() => {
       setScore(prevScore => (isGameOver ? prevScore : prevScore + 1)); // Stop score increment when game is over
     }, 550);
-  
+
     return () => clearInterval(scoreTimerRef.current); // Clean up the timer
   }, [isGameOver]);
-  
-  const handlePause = () => {
+
+  const handlePause = async () => {
+    setIsGameOver(true);
     navigation.navigate('Landing'); // Navigate back to the 'Landing' screen
     clearInterval(scoreTimerRef.current);
     boxTransitionValue.stopAnimation();
+
+    if (gameOverSound) {
+      await gameOverSound.stopAsync(); // Stop the game-over music
+    }
   };
-  const handleTryAgain = () => {
-    setScore(0); // Reset score to zero
-    setIsGameOver(false); 
-    healthRef.current = 3;
-    playerLocationRef.current = "middle"
-    setPlayerLocation('middle')
+  const handleTryAgain = async () => {
+    setIsGameOver(false); // Reset the game-over state
+    setScore(0); // Reset the score
+    healthRef.current = 3; // Reset health
+    setPlayerLocation('middle'); // Reset player location
+
+    if (gameOverSound) {
+      await gameOverSound.stopAsync(); // Stop the game-over music
+    }
+
+    // Restart the game music
+    if (backgroundSound) {
+      await backgroundSound.playAsync(); // Play the regular game music again
+    }
   };
+
   const handlePressLeft = () => {
     if(isGameOver){
       return
@@ -164,7 +179,7 @@ useFocusEffect(
 
   const getRandomJustifyClass = () => {
     const randomNum = Math.random();
-  
+
     // Adjusted probabilities
     if (randomNum < 0.2) {
       return 'justify-start';
@@ -212,7 +227,7 @@ useFocusEffect(
   useEffect(() => {
     updateFreeSpaces(justifyClass);
   }, [justifyClass]);
-  
+
   const updateFreeSpaces = (justifyClass) => {
     if(justifyClass === 'justify-between'){
       setFreeSpace(['middle']);
@@ -228,7 +243,7 @@ useFocusEffect(
     }
     const selectRandomImage = () => {
       const randomNum = Math.random();
-    
+
       if (randomNum < 0.1) {
         obstacleImageRef.current = blackImage; // 10% chance for Black Hole
       } else if (randomNum < 0.2) {
@@ -238,7 +253,7 @@ useFocusEffect(
       } else {
         // The remaining 60% is split between Saturn, Jupiter, and Asteroid
         const remainingRandom = Math.random() * 0.6;
-    
+
         if (remainingRandom < 0.25) {
           obstacleImageRef.current = saturnImage; // 25% chance for Saturn
         } else if (remainingRandom < 0.5) {
@@ -248,10 +263,10 @@ useFocusEffect(
         }
       }
     };
-    
-    
 
-    
+
+
+
     selectRandomImage();
   };
 
@@ -288,8 +303,29 @@ useFocusEffect(
     } else {
       return null;
     }
-  };  
-  
+};
+  useEffect(() => {
+    if (isGameOver) {
+      if (backgroundSound) {
+        backgroundSound.stopAsync(); // Stop existing background music
+      }
+
+      const loadGameOverMusic = async () => {
+        if (!gameOverSound) {
+          const { sound } = await Audio.Sound.createAsync(
+              require('../assets/sounds/game_over.mp3'),
+              { isLooping: true } // Loop "game over" music
+          );
+          setGameOverSound(sound); // Store game over music
+          await sound.playAsync(); // Play "game over" music
+        }
+      };
+
+      loadGameOverMusic(); // Play the game over music
+    }
+  }, [isGameOver, gameOverSound, backgroundSound]); // Trigger when `isGameOver` changes
+
+
   useEffect(() => {
     freeSpaceRef.current = freeSpace;
   }, [freeSpace]);
@@ -417,15 +453,15 @@ useFocusEffect(
     <View className="absolute w-screen h-screen z-0">
         <Background/>
     </View>
-    { isGameOver && 
+    { isGameOver &&
     <View className="absolute h-screen w-screen bg-black z-50 flex-1">
       <View className="h-full w-full flex-1 items-center justify-center z-50">
-        <View className="bg-white h-3/5 w-2/3 flex  flex-col">
-          <Text style={{ fontFamily: "PixelifySans" }} className="text-black text-4xl w-full text-center mt-12"> Game Over</Text>
-          <Text style={{ fontFamily: "PixelifySans" }} className="text-black text-3xl w-full text-center mt-16"> Your Score</Text>
-          <Text style={{ fontFamily: "PixelifySans" }} className="text-black text-2xl w-full text-center mt-3">{score}</Text>
+        <View style={{ backgroundColor: 'rgba(234, 14, 14, 0.32)', height: '100%', width: '100%', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+          <Text style={{ fontFamily: "PixelifySans" }} className="text-red-800 text-6xl w-full text-center mt-12 font-extrabold"> Game Over</Text>
+          <Text style={{ fontFamily: "PixelifySans" }} className="text-red-700 text-3xl w-full text-center mt-16"> Your Score</Text>
+          <Text style={{ fontFamily: "PixelifySans" }} className="text-red-600 text-2xl w-full text-center mt-3">{score}</Text>
           <Pressable onPressIn={handleTryAgain}>
-            <Text style={{ fontFamily: "PixelifySans" }} className="text-black text-3xl w-full text-center mt-32">Try Again</Text>
+            <Image source={require('../assets/sprites/buttons/tryagainbutton.png')} className="scale-75"></Image>
           </Pressable>
           <View className="mt-3 w-full flex items-center justify-center">
             <Pressable onPressIn={handlePause}>

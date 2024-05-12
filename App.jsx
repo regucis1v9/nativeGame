@@ -1,17 +1,54 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import Landing from './Components/Landing';
 import Game from './Components/Game';
 import Loading from './Components/Loading';
 import Leaderboard from "./Components/Leaderboard"
 import Shop from "./Components/Shop"
+import Payment from './Components/Payment';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
 import 'react-native-reanimated'
-import Background from "./Components/Background";
+import { Linking } from 'react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
+  const { handleURLCallback } = useStripe();
+
+
+  const handleDeepLink = useCallback(
+    async (url) => {
+      if (url) {
+        const stripeHandled = await handleURLCallback(url);
+        if (stripeHandled) {
+          // This was a Stripe URL - you can return or add extra handling here as you see fit
+        } else {
+          // This was NOT a Stripe URL – handle as you normally would
+        }
+      }
+    },
+    [handleURLCallback]
+  );
+
+  useEffect(() => {
+    const getUrlAsync = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      handleDeepLink(initialUrl);
+    };
+
+    getUrlAsync();
+
+    const deepLinkListener = Linking.addEventListener(
+      'url',
+      (event) => {
+        handleDeepLink(event.url);
+      }
+    );
+
+    return () => deepLinkListener.remove();
+  }, [handleDeepLink]);
 
   return (
     <NavigationContainer>
@@ -37,11 +74,29 @@ export default function App() {
           options={{ headerShown: false }} // Hide header for Landing screen
         />
         <Stack.Screen
-            name="Shop"
-            component={Shop}
-            options={{ headerShown: false }} // Hide header for Landing screen
+          name="Shop"
+          component={Shop}
+          options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+          name="Payment"
+          component={PaymentWrapper} // Wrap Payment component with StripeProvider
+          options={{ headerShown: false }} // Hide header for Landing screen
         />
       </Stack.Navigator>
     </NavigationContainer>
+  );
+}
+
+// Wrap Payment component with StripeProvider
+function PaymentWrapper() {
+  return (
+    <StripeProvider
+      publishableKey="pk_test_51OZyEIESpZPSxN9af1AwxFQsX3a53PdB7cLJg2Mi1lJ9e09YJ1wfd3hlHlTCwzRNdPOa1d3Gr1aKIoX0FtF78KH200t9Z5nWro"
+      urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
+      merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
+    >
+      <Payment />
+    </StripeProvider>
   );
 }

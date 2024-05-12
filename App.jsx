@@ -7,6 +7,7 @@ import Leaderboard from "./Components/Leaderboard"
 import Shop from "./Components/Shop"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
+import 'react-native-reanimated'
 import Background from "./Components/Background";
 import 'react-native-reanimated';
 

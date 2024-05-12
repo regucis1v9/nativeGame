@@ -64,6 +64,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    navigation.navigate('Payment');// Navigate to Login screen
                 }}
             >
                 <Image

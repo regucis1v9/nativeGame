@@ -9,6 +9,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
 import 'react-native-reanimated'
 import Background from "./Components/Background";
+import 'react-native-reanimated';
 
 export default function App() {
   const Stack = createNativeStackNavigator();

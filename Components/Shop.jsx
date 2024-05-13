@@ -3,6 +3,7 @@ import { View, Image, Pressable, Text} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native'; // Importing useFocusEffect
 import { Audio } from 'expo-av';
+import storage from './Storage';
 
 export default function Shop() {
     const navigation = useNavigation();
@@ -58,7 +59,24 @@ export default function Shop() {
             await buttonSound.replayAsync(); // Play button sound on press
         }
     };
-
+    const changeColor = (color) => {
+        storage.save({
+            key: 'shipColor',
+            data: color,
+        });
+    }
+    const addShield = () =>{
+        storage.save({
+            key: 'bonusLife',
+            data: true,
+        });
+    }
+    const setSound = (music) =>{
+        storage.save({
+            key: 'gameMusic',
+            data: music,
+        });
+    }
     return (
         <View className="flex-1 items-center bg-gray-900">
             <Pressable
@@ -75,6 +93,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    changeColor('red')
                 }}
             >
                 <Image
@@ -85,6 +104,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    changeColor('purple')
                 }}
             >
                 <Image
@@ -95,6 +115,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    changeColor('gold')
                 }}
             >
                 <Image
@@ -105,6 +126,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    setSound('game2')
                 }}
             >
                 <Image
@@ -115,6 +137,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    setSound('game3')
                 }}
             >
                 <Image
@@ -125,6 +148,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
+                    addShield()
                 }}
             >
                 <Image

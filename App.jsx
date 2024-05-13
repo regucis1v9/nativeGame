@@ -12,12 +12,58 @@ import 'tailwindcss/tailwind.css';
 import 'react-native-reanimated'
 import { Linking } from 'react-native';
 import { useStripe } from '@stripe/stripe-react-native';
+import Storage from 'react-native-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
   const { handleURLCallback } = useStripe();
 
-
+    useEffect(() => {
+      const storage = new Storage({
+        storageBackend: AsyncStorage, // for web: window.localStorage
+        size: 1000,
+        defaultExpires: null,
+        enableCache: true,
+      });
+  
+      storage.load({
+        key: 'bonusLife',
+      }).then(bonusLife => {
+      }).catch(() => {
+        console.log('bonusLife not set, saving default');
+        storage.save({
+          key: 'bonusLife',
+          data: false, 
+        });
+      });
+      storage.load({
+        key: 'gameMusic',
+      }).then(gameMusic => {
+      }).catch(() => {
+        console.log('gameMusic not set, saving default');
+        storage.save({
+          key: 'gameMusic',
+          data: 'game1', 
+        });
+      });
+      storage.load({
+        key: 'shipColor',
+      }).then(shipColor => {
+      }).catch(() => {
+        // Value doesn't exist, save the default value
+        console.log('shipColor not set, saving default');
+        storage.save({
+          key: 'shipColor',
+          data: 'blue', 
+        });
+      });
+  
+      // Clean up any resources when component unmounts
+      return () => {
+        // Clean up any resources if needed
+      };
+    }, []);
   const handleDeepLink = useCallback(
     async (url) => {
       if (url) {

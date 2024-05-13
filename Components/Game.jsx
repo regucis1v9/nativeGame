@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import  { Audio } from 'expo-av'
 import {useFocusEffect} from "@react-navigation/native";
+import storage from './Storage';
 
 
 export default function Game() {
@@ -35,12 +36,48 @@ export default function Game() {
   const [freeSpace, setFreeSpace] = useState([]);
   const freeSpaceRef = useRef([]);
   const obstacleImageRef = useRef();
-  const healthRef = useRef(3); // Use useRef for health
+  const healthRef = useRef(3);
   const scoreTimerRef = useRef(null); // Declare scoreTimerRef using useRef
   const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
   const [buttonSound, setButtonSound] = useState(null); // State for button click sound
   const [gameOverSound, setGameOverSound] = useState(null); // Game over music
+  const shipGifRef = useRef(); // State for ship GIF
+  const [shipColor, setShipColor] = useState(); // State for ship color
+  const [gameSound, setGameSound] = useState();
+  const gameSoundRef = useRef();
+  const [bonusLife, setBonusLife] = useState();
+  let hearts = [];
+  
+  useEffect(() => {
+    storage.load({ key: 'shipColor' })
+    .then((color) => {
+        setShipColor(color);
+    })
+    .catch((error) => {
+        console.error('Error loading ship color:', error);
+        // Handle error
+    });
 
+    storage.load({ key: 'gameMusic' })
+    .then((gameMusic) => {
+        gameSoundRef.current = gameMusic;
+    })
+    .catch((error) => {
+        console.error('Error loading gameMusic:', error);
+    });
+
+    storage.load({ key: 'bonusLife' })
+    .then((bonusLife) => {
+        setBonusLife(bonusLife);
+        console.log(bonusLife)
+        if(bonusLife){
+          healthRef.current = 4;
+        }
+    })
+    .catch((error) => {
+        console.error('Error loading bonusLife:', error);
+    });
+}, []);  
   async function loadFont() {
     try {
       await Font.loadAsync({
@@ -85,16 +122,40 @@ const playButtonClickSound = async () => {
 };
 useFocusEffect(
     useCallback(() => {
-        async function loadAndPlayBackgroundMusic() {
-            if (!backgroundSound) {
+      async function loadAndPlayBackgroundMusic() {
+        if (!backgroundSound) {
+            const gameMusic = await storage.load({ key: 'gameMusic' });
+
+            // Conditionally set and play background music based on gameMusic value
+            if (gameMusic === "game1") {
                 const { sound } = await Audio.Sound.createAsync(
                     require('../assets/sounds/game1.wav'),
                     { isLooping: true }
                 );
-                setBackgroundSound(sound); // Store background sound
+                setBackgroundSound(sound); 
                 await sound.playAsync(); // Play the background music
+            } else if (gameMusic === "game2") {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('../assets/sounds/game2.wav'),
+                    { isLooping: true }
+                );
+                setBackgroundSound(sound); 
+                await sound.playAsync(); 
+                // Load and play game2 music
+            } else if (gameMusic === "game3") {
+              const { sound } = await Audio.Sound.createAsync(
+                  require('../assets/sounds/game3.wav'),
+                  { isLooping: true }
+              );
+              setBackgroundSound(sound); 
+              await sound.playAsync(); 
+                // Load and play game3 music
+            } else {
+                // Handle invalid gameMusic value
             }
         }
+    }
+    
 
         async function stopBackgroundMusic() {
             if (backgroundSound) {
@@ -107,7 +168,7 @@ useFocusEffect(
         return () => {
             stopBackgroundMusic(); // Stop the music when the page is unfocused
         };
-    }, [backgroundSound]) // Only runs if backgroundSound state changes
+    }, [backgroundSound]) 
 );
 
   useEffect(() => {
@@ -364,10 +425,16 @@ useFocusEffect(
                 } else if (obstacleImageRef.current === blackImage) {
                   healthRef.current = 0; // Black Hole: instantly set health to 0
                 }
-                
-                healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); // Cap between 0 and 3
-                console.log(healthRef.current);
-                
+                if(bonusLife){
+                  healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 4);
+                }
+                if(!bonusLife){
+                  healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); 
+                }
+                storage.save({
+                  key: 'bonusLife',
+                  data: false,
+              });
                 if (healthRef.current === 0) { // Check if health reaches zero
                   setIsGameOver(true);
                 }
@@ -380,18 +447,31 @@ useFocusEffect(
       });
     };
     
-    const intervalId = setInterval(updateWrapperPosition, 1000/120);
+    const intervalId = setInterval(updateWrapperPosition, 1000/60);
     
     return () => clearInterval(intervalId);
   }, [isGameOver]);
+
+  if (bonusLife && healthRef.current === 4) {
+    hearts = Array.from({ length: 4 }, (_, index) => {
+      if (index === 3) {
+        return <Image key={index} source={require('../assets/sprites/shields/shield.png')} />;
+      } else if (index < healthRef.current) {
+        return <Image key={index} source={heartFullImage} />;
+      } else {
+        return <Image key={index} source={heartEmptyImage} />;
+      }
+    });
+  } else {
+    hearts = Array.from({ length: 3 }, (_, index) => {
+      if (index < healthRef.current) {
+        return <Image key={index} source={heartFullImage} />;
+      } else {
+        return <Image key={index} source={heartEmptyImage} />;
+      }
+    });
+  }
   
-  const hearts = Array.from({ length: 3 }, (_, index) => {
-    if (index < healthRef.current) {
-      return <Image key={index} source={heartFullImage} />;
-    } else {
-      return <Image key={index} source={heartEmptyImage} />;
-    }
-  });
   return (
     <>
     <View className="flex-1 items-center w-screen z-10 absolute">
@@ -403,10 +483,10 @@ useFocusEffect(
       <View className="absolute top-16 left-10 flex gap-3 flex-row z-20">
         {hearts}
       </View>
-      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center z-20">
+      <Pressable onPressIn={handlePressLeft} className="h-screen absolute left-0 w-1/2 flex-1 justify-end items-center z-20 bg-b">
         <Image className="mb-20 scale-x-[-1] scale-75"  source={Arrow}/>
       </Pressable>
-      <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end z-20">
+      <Pressable onPressIn={handlePressRight} className="h-screen absolute right-0 w-1/2 flex-1 justify-end items-center z-20">
         <Image className="mb-20 scale-75" source={Arrow}/>
       </Pressable>
       <Text style={{ fontFamily: "PixelifySans" }} className="absolute top-16 right-10 color-white z-20" >Score: {score}</Text>
@@ -446,7 +526,10 @@ useFocusEffect(
         className="flex-1 justify-end items-center w-1/3 h-screen"
       >
         <View style={{ marginBottom: 200 }}   ref={gifWrapperRef} >
-          <Image source={require('../assets/sprites/ships/ship-blue.gif')} />
+          {shipColor === 'blue' && <Image source={require('../assets/sprites/ships/ship-blue.gif')} />}
+          {shipColor === 'red' && <Image source={require('../assets/sprites/ships/ship-red.gif')} />}
+          {shipColor === 'gold' && <Image source={require('../assets/sprites/ships/ship-gold.gif')} />}
+          {shipColor === 'purple' && <Image source={require('../assets/sprites/ships/ship-purple.gif')} />}
         </View>
       </Animated.View>
     </View>

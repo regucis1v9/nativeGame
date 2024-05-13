@@ -41,7 +41,7 @@ export default function Payment() {
         }
     };
 
-    const fetchPaymentSheetParams = async (coinAmount) => {
+    const fetchPaymentSheetParams = async () => {
         const response = await fetch(`http://172.20.10.11/api/createPaymentIntent?coinAmount=${inputValue}`, {
             method: 'GET',
             headers: {
@@ -88,17 +88,6 @@ export default function Payment() {
           } else {
             Alert.alert('Success', 'Your order is confirmed!');
           }
-      
-        return (
-          <Screen>
-            <Button
-              variant="primary"
-              disabled={!loading}
-              title="Checkout"
-              onPress={openPaymentSheet}
-            />
-          </Screen>
-        );
       }
     
 
@@ -106,15 +95,22 @@ export default function Payment() {
     const buyCoins = async () => {
             playButtonClickSound();
             setButtonPressed(true);
-            if (inputValue === '') {
+            if (inputValue === '' || inputValue <= 0) {
                 setError("Enter a valid value");
             } else {
                 setError("Please wait");
                 await initializePaymentSheet();
-                await presentPaymentSheet();
-                setError("")
+                const paymentResponse = await presentPaymentSheet();
+                if(paymentResponse.error){
+                    setError(`Error code: ${paymentResponse.error.code}`, paymentResponse.error.message)
+                    return;
+                }else{
+                    setError('Your order is confirmed!');
+                    return; 
+                }
             }
     };
+    
     const handleTextChange = (text) => {
         const numericText = text.replace(/[^0-9]/g, '');
         setInputValue(numericText);
@@ -123,7 +119,7 @@ export default function Payment() {
         <>
             <View className="flex-1 items-center z-20">
                 <Pressable className="h-screen w-screen absolute z-20" onPress={Keyboard.dismiss}></Pressable>
-                <Text className="text-white text-3xl w-full text-center mt-40">Select a coin amount</Text>
+                <Text style={{ fontFamily: 'PixelifySans' }} className="text-white text-3xl w-full text-center mt-40">Select a coin amount</Text>
                 <Image
                     source={require('../assets/sprites/coins/customCoin2x5.png')}
                     className="mt-16"
@@ -136,9 +132,17 @@ export default function Payment() {
                     source={require('../assets/sprites/coins/customCoin2x5.png')}
                     className="mt-[-85] ml-10"
                 />
+                <View className="flex flex-row">
+                    <Image
+                        source={require('../assets/sprites/coins/customCoin2.png')}
+                        className="scale-150 mt-10"
+                    />
+                    <Text style={{ fontFamily: 'PixelifySans' }} className="text-white mt-10 ml-2"> = 0.50</Text>
+                    <Text className="text-white mt-10"t>$</Text>
+                </View>
                 <TextInput 
                     style={{ fontFamily: 'PixelifySans' }} 
-                    keyboardType="numeric" 
+                    keyboardType="number-pad" 
                     className="border-solid border-white border-b-2 w-2/6 mt-20 z-30 text-white text-2xl h-10 text-center" 
                     onChangeText={handleTextChange}
                 />
@@ -158,7 +162,7 @@ export default function Payment() {
                 >
                     <Image
                         source={require('../assets/Back.png')}
-                        className="w-100 h-100 scale-50 mt-16 z-30"
+                        className="w-100 h-100 scale-50 z-30"
                     />
                 </Pressable>
             </View>

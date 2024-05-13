@@ -23,9 +23,7 @@ export default function App() {
       if (url) {
         const stripeHandled = await handleURLCallback(url);
         if (stripeHandled) {
-          // This was a Stripe URL - you can return or add extra handling here as you see fit
         } else {
-          // This was NOT a Stripe URL – handle as you normally would
         }
       }
     },
@@ -87,14 +85,10 @@ export default function App() {
     </NavigationContainer>
   );
 }
-
-// Wrap Payment component with StripeProvider
 function PaymentWrapper() {
   return (
     <StripeProvider
       publishableKey="pk_test_51OZyEIESpZPSxN9af1AwxFQsX3a53PdB7cLJg2Mi1lJ9e09YJ1wfd3hlHlTCwzRNdPOa1d3Gr1aKIoX0FtF78KH200t9Z5nWro"
-      urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
-      merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
     >
       <Payment />
     </StripeProvider>

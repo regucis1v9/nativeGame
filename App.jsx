@@ -4,6 +4,8 @@ import Landing from './Components/Landing';
 import Game from './Components/Game';
 import Loading from './Components/Loading';
 import Leaderboard from "./Components/Leaderboard"
+import Login from "./Components/Login"
+import Register from "./Components/Register"
 import Shop from "./Components/Shop"
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import 'tailwindcss/tailwind.css';
@@ -25,6 +27,16 @@ export default function App() {
           name="Landing"
           component={Landing}
           options={{ headerShown: false }} // Hide header for Landing screen
+        />
+        <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{ headerShown: false }} // Hide header for Loading screen
+        />
+        <Stack.Screen
+            name="Register"
+            component={Register}
+            options={{ headerShown: false }} // Hide header for Loading screen
         />
         <Stack.Screen
           name="Game"

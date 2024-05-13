@@ -7,6 +7,9 @@ export default function Loading({ navigation }) {
     const [fontLoaded, setFontLoaded] = useState(false);
     const [backgroundSound, setBackgroundSound] = useState(null);
     const [buttonSound, setButtonSound] = useState(null);
+    const [logoFadeAnim] = useState(new Animated.Value(0));
+    const [textFadeAnim] = useState(new Animated.Value(0));
+    const [loadingFadeAnim] = useState(new Animated.Value(1));
 
     const navigateToLanding = async () => {
         if (buttonSound) {
@@ -28,9 +31,6 @@ export default function Loading({ navigation }) {
             console.error('Error loading font:', error); // Log the error
         }
     };
-
-    const [logoFadeAnim] = useState(new Animated.Value(0));
-    const [textFadeAnim] = useState(new Animated.Value(0));
 
     useEffect(() => {
         loadFont(); // Load the font asynchronously
@@ -60,13 +60,17 @@ export default function Loading({ navigation }) {
             useNativeDriver: true,
         }).start();
 
-        setTimeout(() => {
-            Animated.timing(textFadeAnim, {
-                toValue: 1,
-                duration: 1000,
-                useNativeDriver: true,
-            }).start();
-        }, 1000);
+        Animated.timing(textFadeAnim, {
+            toValue: 1,
+            duration: 3000,
+            useNativeDriver: true,
+        }).start();
+
+        Animated.timing(loadingFadeAnim, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+        }).start();
 
         return () => {
             if (backgroundSound) {
@@ -91,6 +95,13 @@ export default function Loading({ navigation }) {
             className="flex-1 items-center justify-center bg-gray-900"
             onPress={navigateToLanding}
         >
+            <Animated.Image
+                source={require('C:/Users/zenja/Desktop/game/Runner/assets/Loading.gif')}
+                className="opacity-100 -z-50 absolute"
+                style={{
+                    opacity: loadingFadeAnim,
+                }}
+            />
             <Animated.View
                 style={{
                     opacity: logoFadeAnim,

@@ -5,6 +5,9 @@ module.exports = {
   ],
   theme: {
     extend: {},
+           placeholderColor: {
+            'primary': '#FBD87A',
+           }
   },
   plugins: [],
 }

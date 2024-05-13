@@ -90,7 +90,7 @@ useFocusEffect(
         async function loadAndPlayBackgroundMusic() {
             if (!backgroundSound) {
                 const { sound } = await Audio.Sound.createAsync(
-                    require('../assets/sounds/game1.wav'),
+                    require('../assets/sounds/game3.wav'),
                     { isLooping: true }
                 );
                 setBackgroundSound(sound); // Store background sound

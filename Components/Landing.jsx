@@ -1,14 +1,27 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Image, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Background from './Background';
 import { useFocusEffect } from '@react-navigation/native'; // Importing useFocusEffect
 import { Audio } from 'expo-av';
+import storage from './Storage';
+
 export default function Landing() {
     const navigation = useNavigation();
     const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
     const [buttonSound, setButtonSound] = useState(null); // State for button click sound
+    const gameSoundRef = useRef();
+    useEffect(() => {
 
+        storage.load({ key: 'gameMusic' })
+        .then((gameMusic) => {
+            gameSoundRef.current = gameMusic;
+        })
+        .catch((error) => {
+            console.error('Error loading gameMusic:', error);
+        });
+    
+    }, []);
     useEffect(() => {
         async function loadButtonClickSound() {
             const { sound } = await Audio.Sound.createAsync(
@@ -30,12 +43,35 @@ export default function Landing() {
         useCallback(() => {
             async function loadAndPlayBackgroundMusic() {
                 if (!backgroundSound) {
-                    const { sound } = await Audio.Sound.createAsync(
-                        require('../assets/sounds/menu3.wav'),
-                        { isLooping: true }
-                    );
-                    setBackgroundSound(sound); // Store background sound
-                    await sound.playAsync(); // Play the background music
+                    const gameMusic = await storage.load({ key: 'gameMusic' });
+        
+                    // Conditionally set and play background music based on gameMusic value
+                    if (gameMusic === "game1") {
+                        const { sound } = await Audio.Sound.createAsync(
+                            require('../assets/sounds/menu.wav'),
+                            { isLooping: true }
+                        );
+                        setBackgroundSound(sound); 
+                        await sound.playAsync(); // Play the background music
+                    } else if (gameMusic === "game2") {
+                        const { sound } = await Audio.Sound.createAsync(
+                            require('../assets/sounds/menu2.wav'),
+                            { isLooping: true }
+                        );
+                        setBackgroundSound(sound); 
+                        await sound.playAsync(); 
+                        // Load and play game2 music
+                    } else if (gameMusic === "game3") {
+                      const { sound } = await Audio.Sound.createAsync(
+                          require('../assets/sounds/menu3.wav'),
+                          { isLooping: true }
+                      );
+                      setBackgroundSound(sound); 
+                      await sound.playAsync(); 
+                        // Load and play game3 music
+                    } else {
+                        // Handle invalid gameMusic value
+                    }
                 }
             }
 

@@ -32,7 +32,7 @@ class PaymentController extends Controller
             // Create a payment intent with the calculated payment amount
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount' => $paymentAmount,
-                'currency' => 'eur',
+                'currency' => 'usd',
                 'customer' => $customer->id,
                 'description' => 'Purchase of in-game currency',
             ]);

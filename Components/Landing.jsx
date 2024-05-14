@@ -31,7 +31,7 @@ export default function Landing() {
             async function loadAndPlayBackgroundMusic() {
                 if (!backgroundSound) {
                     const { sound } = await Audio.Sound.createAsync(
-                        require('../assets/sounds/menu3.wav'),
+                        require('../assets/sounds/menu.wav'),
                         { isLooping: true }
                     );
                     setBackgroundSound(sound); // Store background sound

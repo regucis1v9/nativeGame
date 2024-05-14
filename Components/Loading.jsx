@@ -96,7 +96,7 @@ export default function Loading({ navigation }) {
             onPress={navigateToLanding}
         >
             <Animated.Image
-                source={require('C:/Users/zenja/Desktop/game/Runner/assets/Loading.gif')}
+                source={require('../assets/Loading.gif')}
                 className="opacity-100 -z-50 absolute"
                 style={{
                     opacity: loadingFadeAnim,

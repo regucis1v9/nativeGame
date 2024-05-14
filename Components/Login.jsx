@@ -14,7 +14,7 @@ export default function Login() {
     // Load custom font
     const loadFont = async () => {
         await Font.loadAsync({
-            'PixelifySans': require('C:/Users/zenja/Desktop/game/Runner/assets/fonts/PixelifySans-VariableFont_wght.ttf'),
+            'PixelifySans': require('../assets/fonts/PixelifySans-VariableFont_wght.ttf'),
         });
         setFontLoaded(true);
     };
@@ -23,7 +23,7 @@ export default function Login() {
     useEffect(() => {
         const loadButtonClickSound = async () => {
             const { sound } = await Audio.Sound.createAsync(
-                require('C:/Users/zenja/Desktop/game/Runner/assets/sounds/button_click.mp3')
+                require('../assets/sounds/button_click.mp3')
             );
             setButtonSound(sound);
         };
@@ -75,7 +75,7 @@ export default function Login() {
             <View className="flex bg-[#222034] border-2 border-[#FCB700] p-6 justify-center items-center w-5/6">
                 {fontLoaded && (
                     <>
-                        <Image source={require('C:/Users/zenja/Desktop/game/Runner/assets/gameLogo.png')} className="opacity-100 h-28" />
+                        <Image source={require('../assets/gameLogo.png')} className="opacity-100 h-28" />
                         <Text style={{ fontFamily: "PixelifySans" }} className="text-[#FCB700] text-4xl font-extrabold mb-5">Login</Text>
                         <View className="w-11/12">
                             <TextInput
@@ -97,13 +97,13 @@ export default function Login() {
                             />
                         </View>
                         <Pressable className="w-60 h-20 flex items-center justify-center mt-20 mb-1" onPress={handleLogin}>
-                            <Image source={require('C:/Users/zenja/Desktop/game/Runner/assets/Login.png')} className="opacity-100 scale-75" />
+                            <Image source={require('../assets/Login.png')} className="opacity-100 scale-75" />
                         </Pressable>
                         <Pressable className="w-60 h-20 flex items-center justify-center rounded-md mb-1" onPress={handleGoRegister}>
-                            <Image source={require('C:/Users/zenja/Desktop/game/Runner/assets/NewUser.jpg')} className="opacity-100 scale-75" />
+                            <Image source={require('../assets/NewUser.jpg')} className="opacity-100 scale-75" />
                         </Pressable>
                         <Pressable className="w-60 h-20 flex items-center justify-center rounded-md" onPress={handleGoBack}>
-                            <Image source={require('C:/Users/zenja/Desktop/game/Runner/assets/Back.png')} className="opacity-100 scale-75" />
+                            <Image source={require('../assets/Back.png')} className="opacity-100 scale-75" />
                         </Pressable>
                     </>
                 )}

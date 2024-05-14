@@ -129,7 +129,7 @@ useFocusEffect(
             // Conditionally set and play background music based on gameMusic value
             if (gameMusic === "game1") {
                 const { sound } = await Audio.Sound.createAsync(
-                    require('../assets/sounds/game3.wav'),
+                    require('../assets/sounds/game1.wav'),
                     { isLooping: true }
                 );
                 setBackgroundSound(sound); 

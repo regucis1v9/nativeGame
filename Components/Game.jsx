@@ -78,6 +78,7 @@ export default function Game() {
         console.error('Error loading bonusLife:', error);
     });
 }, []);  
+
   async function loadFont() {
     try {
       await Font.loadAsync({

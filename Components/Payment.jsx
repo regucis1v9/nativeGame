@@ -18,6 +18,7 @@ export default function Payment() {
     const [buttonPressed, setButtonPressed] = useState(false);
     const [loading, setLoading] = useState(true); // Set to true initially
     const [paymentIntentData, setPaymentIntentData] = useState(null);
+    const [inProgress, setInProgress] =  useState(false)
 
     const updateCoins = (coins) =>{
         storage.save({
@@ -100,6 +101,10 @@ export default function Payment() {
 
 
       const buyCoins = async () => {
+        if(inProgress){
+            return
+        }
+        setInProgress(true)
         playButtonClickSound();
         setButtonPressed(true);
         if (inputValue === '' || inputValue <= 0) {
@@ -119,6 +124,7 @@ export default function Payment() {
                 return; 
             }
         }
+        setInProgress(false)
     };
     
     

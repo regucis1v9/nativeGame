@@ -23,6 +23,7 @@ export default function Landing() {
         });
     
     }, []);
+    
     useEffect(() => {
         async function loadButtonClickSound() {
             const { sound } = await Audio.Sound.createAsync(

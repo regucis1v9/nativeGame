@@ -21,61 +21,56 @@ export default function App() {
   const Stack = createNativeStackNavigator();
   const { handleURLCallback } = useStripe();
 
-    useEffect(() => {
-      const storage = new Storage({
-        storageBackend: AsyncStorage, // for web: window.localStorage
-        size: 1000,
-        defaultExpires: null,
-        enableCache: true,
-      });
+  useEffect(() => {
+    const initializeStorage = async () => {
+      try {
+        const storage = new Storage({
+          storageBackend: AsyncStorage,
+          size: 1000,
+          defaultExpires: null,
+          enableCache: true,
+        });
   
-      storage.load({
-        key: 'bonusLife',
-      }).then(bonusLife => {
-      }).catch(() => {
-        console.log('bonusLife not set, saving default');
-        storage.save({
-          key: 'bonusLife',
-          data: false, 
-        });
-      });
-
-      storage.load({
-        key: 'coins',
-      }).then(coins => {
-      }).catch(() => {
-        console.log('coins not set, saving default');
-        storage.save({
-          key: 'coins',
-          data: 0, 
-        });
-      });
-
-      storage.load({
-        key: 'gameMusic',
-      }).then(gameMusic => {
-      }).catch(() => {
-        console.log('gameMusic not set, saving default');
-        storage.save({
-          key: 'gameMusic',
-          data: 'game1', 
-        });
-      });
-
-      storage.load({
-        key: 'shipColor',
-      }).then(shipColor => {
-      }).catch(() => {
-        console.log('shipColor not set, saving default');
-        storage.save({
-          key: 'shipColor',
-          data: 'blue', 
-        });
-      });
-
-      return () => {
-      };
-    }, []);
+        // Load or initialize each key
+        const keys = ['bonusLife', 'coins', 'gameMusic', 'shipColor', 'ownedItems'];
+        for (const key of keys) {
+          const data = await storage.load({ key });
+          if (!data) {
+            console.log(`${key} not set, saving default`);
+            await storage.save({ key, data: getDefaultData(key) });
+          }
+          console.log(`${key}:`, data);
+        }
+      } catch (error) {
+        console.error('Error initializing storage:', error);
+      }
+    };
+  
+    initializeStorage();
+  
+    return () => {
+      // Cleanup if needed
+    };
+  }, []);
+  
+  // Helper function to provide default data based on the key
+  const getDefaultData = (key) => {
+    switch (key) {
+      case 'bonusLife':
+        return false;
+      case 'coins':
+        return 0;
+      case 'gameMusic':
+        return 'game1';
+      case 'shipColor':
+        return 'blue';
+      case 'ownedItems':
+        return [];
+      default:
+        return null;
+    }
+  };
+  
   const handleDeepLink = useCallback(
     async (url) => {
       if (url) {

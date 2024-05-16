@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Image, Pressable, Text, Alert} from 'react-native';
+import { View, Image, Pressable, Text, Alert } from 'react-native';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
-import { useFocusEffect } from '@react-navigation/native'; // Importing useFocusEffect
+import { useFocusEffect } from '@react-navigation/native';
 import { Audio } from 'expo-av';
 import storage from './Storage';
 
@@ -11,16 +11,21 @@ export default function Shop() {
     const [backgroundSound, setBackgroundSound] = useState(null);
     const [buttonSound, setButtonSound] = useState(null);
     const [coins, setCoins] = useState();
+    const [ownedItems, setOwnedItems] = useState([]);
 
     useEffect(() => {
+        // Load coins
         storage.load({ key: 'coins' })
-        .then((coins) => {
-            setCoins(coins);
-        })
-        .catch((error) => {
-            console.error('Error loading ship color:', error);   
-        });
-    }, [isFocused]); 
+            .then((coins) => {
+                setCoins(coins);
+            })
+            .catch((error) => {
+                console.error('Error loading coins:', error);
+            });
+
+        // Load owned items
+        loadOwnedItems();
+    }, [isFocused]);
 
     useEffect(() => {
         async function loadButtonClickSound() {
@@ -71,12 +76,22 @@ export default function Shop() {
             await buttonSound.replayAsync(); // Play button sound on press
         }
     };
-    const changeColor = async (color, price) => {
-        if(price > coins){
-            Alert.alert("Insufficient funds")
-            return
+
+    const changeColor = async (color, price, itemID) => {
+        if (ownedItems.includes(itemID)) {
+            storage.save({
+                key: 'shipColor',
+                data: color,
+            });
+            return;
         }
-        setCoins(coins - price)
+
+        if (price > coins) {
+            Alert.alert("Insufficient funds");
+            return;
+        }
+
+        setCoins(coins - price);
         storage.save({
             key: 'coins',
             data: coins - price,
@@ -85,27 +100,90 @@ export default function Shop() {
             key: 'shipColor',
             data: color,
         });
-    }
-    const addShield = (price) =>{
-        if(price > coins){
-            Alert.alert("Insufficient funds")
-            return
+
+        setOwnedItems([...ownedItems, itemID]);
+        storage.save({
+            key: 'ownedItems',
+            data: [...ownedItems, itemID],
+        });
+    };
+
+    const addShield = (price, itemID) => {
+        if (ownedItems.includes(itemID)) {
+            storage.save({
+                key: 'bonusLife',
+                data: true,
+            });
+            return;
         }
+
+        if (price > coins) {
+            Alert.alert("Insufficient funds");
+            return;
+        }
+
+        setCoins(coins - price);
+        storage.save({
+            key: 'coins',
+            data: coins - price,
+        });
         storage.save({
             key: 'bonusLife',
             data: true,
         });
-    }
-    const setSound = (music, price) =>{
-        if(price > coins){
-            Alert.alert("Insufficient funds")
-            return
+
+        setOwnedItems([...ownedItems, itemID]);
+        storage.save({
+            key: 'ownedItems',
+            data: [...ownedItems, itemID],
+        });
+    };
+
+    const setSound = (music, price, itemID) => {
+        if (ownedItems.includes(itemID)) {
+            storage.save({
+                key: 'gameMusic',
+                data: music,
+            });
+            return;
         }
+
+        if (price > coins) {
+            Alert.alert("Insufficient funds");
+            return;
+        }
+
+        setCoins(coins - price);
+        storage.save({
+            key: 'coins',
+            data: coins - price,
+        });
         storage.save({
             key: 'gameMusic',
             data: music,
         });
-    }
+
+        setOwnedItems([...ownedItems, itemID]);
+        storage.save({
+            key: 'ownedItems',
+            data: [...ownedItems, itemID],
+        });
+    };
+
+    // Function to load owned items
+    const loadOwnedItems = () => {
+        storage.load({
+            key: 'ownedItems'
+        }).then(items => {
+            setOwnedItems(items || []); // Initialize with empty array if no items found
+        }).catch(() => {
+            console.log('ownedItems not set, saving default');
+            storage.save({
+                key: 'ownedItems',
+                data: [],
+            });
+        });
+    };
     return (
         <View className="flex-1 items-center bg-gray-900">
             <Pressable
@@ -126,7 +204,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('red', 60)
+                    changeColor('red', 60, 1)
                 }}
             >
                 <Image
@@ -137,7 +215,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('purple' ,80)
+                    changeColor('purple' ,80, 2)
                 }}
             >
                 <Image
@@ -148,7 +226,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('gold', 100)
+                    changeColor('gold', 100, 3)
                 }}
             >
                 <Image
@@ -159,7 +237,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    setSound('game2,', 20)
+                    setSound('game2,', 20, 4)
                 }}
             >
                 <Image
@@ -170,7 +248,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    setSound('game3', 20)
+                    setSound('game3', 20, 5)
                 }}
             >
                 <Image
@@ -181,7 +259,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    addShield(50)
+                    addShield(50 ,6)
                 }}
             >
                 <Image

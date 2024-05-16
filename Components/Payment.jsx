@@ -5,20 +5,38 @@ import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
 import { useNavigation } from '@react-navigation/native';
 import { useStripe } from '@stripe/stripe-react-native';
+import storage from './Storage';
 
 export default function Payment() {
     const navigation = useNavigation();
     const { initPaymentSheet, presentPaymentSheet } = useStripe();
     const [fontLoaded, setFontLoaded] = useState(false);
     const [buttonSound, setButtonSound] = useState(null); 
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState(0);
+    const [currCoins, setCurrCoins] = useState(0);
     const [error, setError] = useState("");
     const [buttonPressed, setButtonPressed] = useState(false);
     const [loading, setLoading] = useState(true); // Set to true initially
     const [paymentIntentData, setPaymentIntentData] = useState(null);
 
+    const updateCoins = (coins) =>{
+        storage.save({
+            key: 'coins',
+            data: coins,
+        });
+    }
+
     useEffect(() => {
-        
+
+        storage.load({ key: 'coins' })
+        .then((coins) => {
+            setCurrCoins(coins);
+        })
+        .catch((error) => {
+            console.error('Error loading ship color:', error);
+            
+        });
+
         async function loadButtonClickSound() {
             const { sound } = await Audio.Sound.createAsync(
                 require('../assets/sounds/button_click.mp3')
@@ -79,37 +97,30 @@ export default function Payment() {
           setLoading(true);
         }
       };
-    
-      const openPaymentSheet = async () => {
-          const { error } = await presentPaymentSheet();
-            setError("")
-          if (error) {
-            Alert.alert(`Error code: ${error.code}`, error.message);
-          } else {
-            Alert.alert('Success', 'Your order is confirmed!');
-          }
-      }
-    
 
 
-    const buyCoins = async () => {
-            playButtonClickSound();
-            setButtonPressed(true);
-            if (inputValue === '' || inputValue <= 0) {
-                setError("Enter a valid value");
+      const buyCoins = async () => {
+        playButtonClickSound();
+        setButtonPressed(true);
+        if (inputValue === '' || inputValue <= 0) {
+            setError("Enter a valid value");
+        } else {
+            setError("Please wait");
+            await initializePaymentSheet();
+            const paymentResponse = await presentPaymentSheet();
+            if(paymentResponse.error){
+                setError(paymentResponse.error.message)
+                return;
             } else {
-                setError("Please wait");
-                await initializePaymentSheet();
-                const paymentResponse = await presentPaymentSheet();
-                if(paymentResponse.error){
-                    setError(`Error code: ${paymentResponse.error.code}`, paymentResponse.error.message)
-                    return;
-                }else{
-                    setError('Your order is confirmed!');
-                    return; 
-                }
+                setError('Your order is confirmed!');
+                const coinsToAdd = parseInt(currCoins) + parseInt(inputValue); // Convert to numbers
+                console.log(coinsToAdd);
+                updateCoins(coinsToAdd);
+                return; 
             }
+        }
     };
+    
     
     const handleTextChange = (text) => {
         const numericText = text.replace(/[^0-9]/g, '');

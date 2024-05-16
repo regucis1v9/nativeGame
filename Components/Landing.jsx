@@ -16,6 +16,7 @@ export default function Landing() {
         storage.load({ key: 'gameMusic' })
         .then((gameMusic) => {
             gameSoundRef.current = gameMusic;
+            console.log(gameMusic)
         })
         .catch((error) => {
             console.error('Error loading gameMusic:', error);
@@ -44,8 +45,6 @@ export default function Landing() {
             async function loadAndPlayBackgroundMusic() {
                 if (!backgroundSound) {
                     const gameMusic = await storage.load({ key: 'gameMusic' });
-        
-                    // Conditionally set and play background music based on gameMusic value
                     if (gameMusic === "game1") {
                         const { sound } = await Audio.Sound.createAsync(
                             require('../assets/sounds/menu.wav'),

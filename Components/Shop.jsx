@@ -1,14 +1,26 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Image, Pressable, Text} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Image, Pressable, Text, Alert} from 'react-native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import { useFocusEffect } from '@react-navigation/native'; // Importing useFocusEffect
 import { Audio } from 'expo-av';
 import storage from './Storage';
 
 export default function Shop() {
     const navigation = useNavigation();
-    const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
-    const [buttonSound, setButtonSound] = useState(null); // State for button click sound
+    const isFocused = useIsFocused(); // Use isFocused hook
+    const [backgroundSound, setBackgroundSound] = useState(null);
+    const [buttonSound, setButtonSound] = useState(null);
+    const [coins, setCoins] = useState();
+
+    useEffect(() => {
+        storage.load({ key: 'coins' })
+        .then((coins) => {
+            setCoins(coins);
+        })
+        .catch((error) => {
+            console.error('Error loading ship color:', error);   
+        });
+    }, [isFocused]); 
 
     useEffect(() => {
         async function loadButtonClickSound() {
@@ -59,19 +71,36 @@ export default function Shop() {
             await buttonSound.replayAsync(); // Play button sound on press
         }
     };
-    const changeColor = (color) => {
+    const changeColor = async (color, price) => {
+        if(price > coins){
+            Alert.alert("Insufficient funds")
+            return
+        }
+        setCoins(coins - price)
+        storage.save({
+            key: 'coins',
+            data: coins - price,
+        });
         storage.save({
             key: 'shipColor',
             data: color,
         });
     }
-    const addShield = () =>{
+    const addShield = (price) =>{
+        if(price > coins){
+            Alert.alert("Insufficient funds")
+            return
+        }
         storage.save({
             key: 'bonusLife',
             data: true,
         });
     }
-    const setSound = (music) =>{
+    const setSound = (music, price) =>{
+        if(price > coins){
+            Alert.alert("Insufficient funds")
+            return
+        }
         storage.save({
             key: 'gameMusic',
             data: music,
@@ -90,10 +119,14 @@ export default function Shop() {
                     className="w-100 h-100 scale-75 mt-12"
                 />
             </Pressable>
+            <View className="flex flex-row ">
+                <Text style={{ fontFamily: "PixelifySans" }} className="text-white mr-4">{coins}</Text>
+                <Image source={require('../assets/sprites/coins/customCoin2.png')}></Image>
+            </View>
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('red')
+                    changeColor('red', 60)
                 }}
             >
                 <Image
@@ -104,7 +137,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('purple')
+                    changeColor('purple' ,80)
                 }}
             >
                 <Image
@@ -115,7 +148,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    changeColor('gold')
+                    changeColor('gold', 100)
                 }}
             >
                 <Image
@@ -126,7 +159,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    setSound('game2')
+                    setSound('game2,', 20)
                 }}
             >
                 <Image
@@ -137,7 +170,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    setSound('game3')
+                    setSound('game3', 20)
                 }}
             >
                 <Image
@@ -148,7 +181,7 @@ export default function Shop() {
             <Pressable
                 onPress={() => {
                     playButtonClickSound();
-                    addShield()
+                    addShield(50)
                 }}
             >
                 <Image
@@ -208,7 +241,7 @@ export default function Shop() {
                 <Text style={{ fontFamily: "PixelifySans" }} className="text-white absolute top-[235px] right-[110px]">Purple</Text>
             </View>
             <View>
-                <Text style={{ fontFamily: "PixelifySans" }} className="text-white absolute top-[330px] right-[140px]">60</Text>
+                <Text style={{ fontFamily: "PixelifySans" }} className="text-white absolute top-[330px] right-[140px]">80</Text>
             </View>
             <View>
                 <Image

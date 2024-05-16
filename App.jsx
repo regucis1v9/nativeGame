@@ -39,6 +39,18 @@ export default function App() {
           data: false, 
         });
       });
+
+      storage.load({
+        key: 'coins',
+      }).then(coins => {
+      }).catch(() => {
+        console.log('coins not set, saving default');
+        storage.save({
+          key: 'coins',
+          data: 0, 
+        });
+      });
+
       storage.load({
         key: 'gameMusic',
       }).then(gameMusic => {
@@ -49,21 +61,19 @@ export default function App() {
           data: 'game1', 
         });
       });
+
       storage.load({
         key: 'shipColor',
       }).then(shipColor => {
       }).catch(() => {
-        // Value doesn't exist, save the default value
         console.log('shipColor not set, saving default');
         storage.save({
           key: 'shipColor',
           data: 'blue', 
         });
       });
-  
-      // Clean up any resources when component unmounts
+
       return () => {
-        // Clean up any resources if needed
       };
     }, []);
   const handleDeepLink = useCallback(

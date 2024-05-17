@@ -7,14 +7,23 @@ import storage from './Storage';
 
 export default function Shop() {
     const navigation = useNavigation();
-    const isFocused = useIsFocused(); // Use isFocused hook
+    const isFocused = useIsFocused();
     const [backgroundSound, setBackgroundSound] = useState(null);
     const [buttonSound, setButtonSound] = useState(null);
     const [coins, setCoins] = useState();
     const [ownedItems, setOwnedItems] = useState([]);
+    const [userID, setUserID] = useState();
 
     useEffect(() => {
-        // Load coins
+        storage.load({ key: 'id' })
+            .then((userID) => {
+                setUserID(userID);
+                console.log(userID);
+            })
+            .catch((error) => {
+                console.error('Error loading userID:', error);
+            });
+
         storage.load({ key: 'coins' })
             .then((coins) => {
                 setCoins(coins);
@@ -23,7 +32,6 @@ export default function Shop() {
                 console.error('Error loading coins:', error);
             });
 
-        // Load owned items
         loadOwnedItems();
     }, [isFocused]);
 
@@ -32,17 +40,17 @@ export default function Shop() {
             const { sound } = await Audio.Sound.createAsync(
                 require('../assets/sounds/button_click.mp3')
             );
-            setButtonSound(sound); // Store the button click sound in state
+            setButtonSound(sound);
         }
 
-        loadButtonClickSound(); // Load the button click sound once
+        loadButtonClickSound();
 
         return () => {
             if (buttonSound) {
-                buttonSound.unloadAsync(); // Unload button sound to free resources
+                buttonSound.unloadAsync();
             }
         };
-    }, []); // Empty dependency array ensures this runs only once
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
@@ -52,28 +60,53 @@ export default function Shop() {
                         require('../assets/sounds/shop.mp3'),
                         { isLooping: true }
                     );
-                    setBackgroundSound(sound); // Store background sound
-                    await sound.playAsync(); // Play the background music
+                    setBackgroundSound(sound);
+                    await sound.playAsync();
                 }
             }
 
             async function stopBackgroundMusic() {
                 if (backgroundSound) {
-                    await backgroundSound.stopAsync(); // Stop the background music
+                    await backgroundSound.stopAsync();
                 }
             }
 
-            loadAndPlayBackgroundMusic(); // Play the background music when the page is focused
+            loadAndPlayBackgroundMusic();
 
             return () => {
-                stopBackgroundMusic(); // Stop the music when the page is unfocused
+                stopBackgroundMusic();
             };
-        }, [backgroundSound]) // Only runs if backgroundSound state changes
+        }, [backgroundSound])
     );
 
     const playButtonClickSound = async () => {
         if (buttonSound) {
-            await buttonSound.replayAsync(); // Play button sound on press
+            await buttonSound.replayAsync();
+        }
+    };
+
+    const updateCoinsOnServer = async (newBalance) => {
+        try {
+            const coinData = { userID, balance: newBalance };
+            const response = await fetch('http://172.20.10.11/api/updateCoins', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(coinData),
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                console.log(coinData);
+                Alert.alert(data.error);
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
         }
     };
 
@@ -91,6 +124,10 @@ export default function Shop() {
             Alert.alert("Insufficient funds");
             return;
         }
+
+        const newBalance = -price// Subtract the price from the current balance
+        const updateSuccess = await updateCoinsOnServer(newBalance);
+        if (!updateSuccess) return;
 
         setCoins(coins - price);
         Alert.alert("Item bought");
@@ -110,7 +147,7 @@ export default function Shop() {
         });
     };
 
-    const addShield = (price, itemID) => {
+    const addShield = async (price, itemID) => {
         if (ownedItems.includes(itemID)) {
             Alert.alert("Item already owned");
             storage.save({
@@ -124,6 +161,10 @@ export default function Shop() {
             Alert.alert("Insufficient funds");
             return;
         }
+
+        const newBalance = -price; // Subtract the price from the current balance
+        const updateSuccess = await updateCoinsOnServer(newBalance);
+        if (!updateSuccess) return;
 
         setCoins(coins - price);
         Alert.alert("Item bought");
@@ -143,7 +184,7 @@ export default function Shop() {
         });
     };
 
-    const setSound = (music, price, itemID) => {
+    const setSound = async (music, price, itemID) => {
         if (ownedItems.includes(itemID)) {
             Alert.alert("Item equipped");
             storage.save({
@@ -157,6 +198,10 @@ export default function Shop() {
             Alert.alert("Insufficient funds");
             return;
         }
+
+        const newBalance = -price; // Subtract the price from the current balance
+        const updateSuccess = await updateCoinsOnServer(newBalance);
+        if (!updateSuccess) return;
 
         setCoins(coins - price);
         Alert.alert("Item bought");
@@ -176,12 +221,11 @@ export default function Shop() {
         });
     };
 
-    // Function to load owned items
     const loadOwnedItems = () => {
         storage.load({
             key: 'ownedItems'
         }).then(items => {
-            setOwnedItems(items || []); // Initialize with empty array if no items found
+            setOwnedItems(items || []);
         }).catch(() => {
             console.log('ownedItems not set, saving default');
             storage.save({
@@ -190,6 +234,7 @@ export default function Shop() {
             });
         });
     };
+
     return (
         <View className="flex-1 items-center bg-gray-900">
             <Pressable

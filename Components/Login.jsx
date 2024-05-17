@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
+import storage from './Storage';
 
 export default function Login() {
     const navigation = useNavigation();
@@ -71,7 +72,11 @@ export default function Login() {
                 return;
             }
             Alert.alert("Login succesful!")
-            console.log(data)
+            const balance = data.balance
+            storage.save({
+                key: 'coins',
+                data: data.user.balance,
+            });
             navigation.navigate('Landing');
         } catch (error) {
             console.error('Error:', error);

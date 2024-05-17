@@ -14,6 +14,7 @@ export default function Payment() {
     const [buttonSound, setButtonSound] = useState(null); 
     const [inputValue, setInputValue] = useState(0);
     const [currCoins, setCurrCoins] = useState(0);
+    const [userID, setUserID] = useState();
     const [error, setError] = useState("");
     const [buttonPressed, setButtonPressed] = useState(false);
     const [loading, setLoading] = useState(true); // Set to true initially
@@ -32,9 +33,19 @@ export default function Payment() {
         storage.load({ key: 'coins' })
         .then((coins) => {
             setCurrCoins(coins);
+            console.log(coins)
         })
         .catch((error) => {
-            console.error('Error loading ship color:', error);
+            console.error('Error loading  coins:', error);
+            
+        });
+        storage.load({ key: 'id' })
+        .then((userID) => {
+            setUserID(userID);
+            console.log(userID)
+        })
+        .catch((error) => {
+            console.error('Error loading  userID:', error);
             
         });
 
@@ -121,7 +132,30 @@ export default function Payment() {
                 const coinsToAdd = parseInt(currCoins) + parseInt(inputValue); // Convert to numbers
                 console.log(coinsToAdd);
                 updateCoins(coinsToAdd);
-                return; 
+                console.log(userID, inputValue)
+                const coinData = {
+                    userID: userID,
+                    balance: inputValue,
+                };
+                try {
+                    const response = await fetch('http://172.20.10.11/api/updateCoins', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(coinData),
+                    });
+        
+                    const data = await response.json();
+        
+                    if(data.error){
+                        console.log(loginData)
+                        Alert.alert(data.error)
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
             }
         }
         setInProgress(false)

@@ -11,6 +11,7 @@ export default function Landing() {
     const [backgroundSound, setBackgroundSound] = useState(null); // State for background music
     const [buttonSound, setButtonSound] = useState(null); // State for button click sound
     const gameSoundRef = useRef();
+    const [isLoggedIn, setIsLoggedIn] =  useState(false)
     useEffect(() => {
 
         storage.load({ key: 'gameMusic' })
@@ -21,6 +22,16 @@ export default function Landing() {
         .catch((error) => {
             console.error('Error loading gameMusic:', error);
         });
+
+        storage.load({ key: 'id' })
+        .then((id) => {
+            setIsLoggedIn(true)
+            console.log(isLoggedIn)
+        })
+        .catch((error) => {
+            console.error('Error loading gameMusic:', error);
+        });
+    
     
     }, []);
     
@@ -137,17 +148,33 @@ export default function Landing() {
                     className="w-100 h-100 scale-75"
                 />
             </Pressable>
-            <Pressable
-                onPress={() => {
-                    playButtonClickSound();
-                    navigation.navigate('Login'); // Navigate to Login screen
-                }}
-            >
-                <Image
-                    source={require('../assets/Login.png')}
-                    className="w-100 h-100 scale-75"
-                />
-            </Pressable>
+            {!isLoggedIn && 
+                <Pressable
+                    onPress={() => {
+                        playButtonClickSound();
+                        navigation.navigate('Login'); // Navigate to Login screen
+                    }}
+                >
+                    <Image
+                        source={require('../assets/Login.png')}
+                        className="w-100 h-100 scale-75"
+                    />
+                </Pressable>
+            }
+            {isLoggedIn && 
+                <Pressable
+                    onPress={() => {
+                        playButtonClickSound();
+                        navigation.navigate('Account'); // Navigate to Login screen
+                    }}
+                >
+                    <Image
+                        source={require('../assets/Account.jpg')}
+                        className="w-100 h-100 scale-75"
+                    />
+                </Pressable>
+            }
+
         </View>
         <View className="absolute w-screen h-screen z-0">
             <Background/>

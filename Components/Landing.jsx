@@ -95,6 +95,8 @@ export default function Landing() {
         }
     };
 
+    
+
     return (
         <>
         <View className="flex-1 items-center z-10">

@@ -79,6 +79,7 @@ export default function Shop() {
 
     const changeColor = async (color, price, itemID) => {
         if (ownedItems.includes(itemID)) {
+            Alert.alert("Item equipped");
             storage.save({
                 key: 'shipColor',
                 data: color,
@@ -92,6 +93,7 @@ export default function Shop() {
         }
 
         setCoins(coins - price);
+        Alert.alert("Item bought");
         storage.save({
             key: 'coins',
             data: coins - price,
@@ -110,6 +112,7 @@ export default function Shop() {
 
     const addShield = (price, itemID) => {
         if (ownedItems.includes(itemID)) {
+            Alert.alert("Item already owned");
             storage.save({
                 key: 'bonusLife',
                 data: true,
@@ -123,6 +126,7 @@ export default function Shop() {
         }
 
         setCoins(coins - price);
+        Alert.alert("Item bought");
         storage.save({
             key: 'coins',
             data: coins - price,
@@ -141,6 +145,7 @@ export default function Shop() {
 
     const setSound = (music, price, itemID) => {
         if (ownedItems.includes(itemID)) {
+            Alert.alert("Item equipped");
             storage.save({
                 key: 'gameMusic',
                 data: music,
@@ -154,6 +159,7 @@ export default function Shop() {
         }
 
         setCoins(coins - price);
+        Alert.alert("Item bought");
         storage.save({
             key: 'coins',
             data: coins - price,

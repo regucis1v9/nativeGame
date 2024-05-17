@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, Pressable } from 'react-native';
+import { View, Text, TextInput, Image, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
@@ -7,7 +7,9 @@ import { Audio } from 'expo-av';
 export default function Register() {
     const navigation = useNavigation();
     const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [fontLoaded, setFontLoaded] = useState(false);
     const [buttonSound, setButtonSound] = useState(null);
 
@@ -41,16 +43,40 @@ export default function Register() {
         loadFont();
     }, []);
 
-    const handleLogin = () => {
+    const handleRegister = async () => {
         // Play button click sound
         if (buttonSound) {
             buttonSound.replayAsync();
         }
-        // Add your login logic here
-        console.log('Username:', username);
-        console.log('Password:', password);
-        // For demonstration purposes, let's navigate to the game screen after login
-        navigation.navigate('Landing');
+
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://172.20.10.11/api/createUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: username,
+                    email: email,
+                    password: password,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                Alert.alert('Success', 'User registered successfully');
+            } else {
+                Alert.alert('Error', data.error || 'Failed to register');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Failed to register: ' + error.message);
+        }
     };
 
     const handleGoBack = () => {
@@ -76,15 +102,15 @@ export default function Register() {
                                 placeholder="Username"
                                 value={username}
                                 onChangeText={setUsername}
-                                onFocus={() => buttonSound.replayAsync()}
+                                onFocus={() => buttonSound && buttonSound.replayAsync()}
                             />
                             <TextInput
                                 style={{ fontFamily: "PixelifySans" }}
                                 className="h-10 border border-[#FCB700] px-4 mb-3 text-[#FCB700] placeholder-primary"
                                 placeholder="E-mail"
-                                value={username}
-                                onChangeText={setUsername}
-                                onFocus={() => buttonSound.replayAsync()}
+                                value={email}
+                                onChangeText={setEmail}
+                                onFocus={() => buttonSound && buttonSound.replayAsync()}
                             />
                             <TextInput
                                 style={{ fontFamily: "PixelifySans" }}
@@ -93,19 +119,19 @@ export default function Register() {
                                 secureTextEntry
                                 value={password}
                                 onChangeText={setPassword}
-                                onFocus={() => buttonSound.replayAsync()}
+                                onFocus={() => buttonSound && buttonSound.replayAsync()}
                             />
                             <TextInput
                                 style={{ fontFamily: "PixelifySans" }}
                                 className="h-10 border border-[#FCB700] px-4 text-[#FCB700] placeholder-primary"
                                 placeholder="Confirm password"
                                 secureTextEntry
-                                value={password}
-                                onChangeText={setPassword}
-                                onFocus={() => buttonSound.replayAsync()}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                                onFocus={() => buttonSound && buttonSound.replayAsync()}
                             />
                         </View>
-                        <Pressable className="w-60 h-20 flex items-center justify-center mt-20 mb-4" onPress={handleLogin}>
+                        <Pressable className="w-60 h-20 flex items-center justify-center mt-20 mb-4" onPress={handleRegister}>
                             <Image source={require('../assets/Register.jpg')} className="opacity-100 scale-75" />
                         </Pressable>
                         <Pressable className="w-60 h-20 flex items-center justify-center rounded-md" onPress={handleGoBack}>

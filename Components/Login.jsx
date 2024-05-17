@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Image, Pressable } from 'react-native';
+import { View, Text, TextInput, Image, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
@@ -41,23 +41,49 @@ export default function Login() {
         loadFont();
     }, []);
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
         // Play button click sound
         if (buttonSound) {
             buttonSound.replayAsync();
         }
-        // Add your login logic here
-        console.log('Username:', username);
-        console.log('Password:', password);
-        // For demonstration purposes, let's navigate to the game screen after login
-        navigation.navigate('Landing');
+
+        // Prepare data to be sent
+        const loginData = {
+            name: username,
+            password: password,
+        };
+
+        try {
+            // Send POST request
+            const response = await fetch('http://172.20.10.11/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData),
+            });
+
+            const data = await response.json();
+
+            if(data.error){
+                console.log(loginData)
+                Alert.alert(data.error)
+                return;
+            }
+            Alert.alert("Login succesful!")
+            console.log(data)
+            navigation.navigate('Landing');
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
+
     const handleGoRegister = () => {
         // Play button click sound
         if (buttonSound) {
             buttonSound.replayAsync();
         }
-        // Navigate back
+        // Navigate to Register screen
         navigation.navigate('Register');
     };
 

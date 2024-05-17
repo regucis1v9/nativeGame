@@ -108,6 +108,32 @@ export default function Shop() {
             console.error('Error:', error);
             return false;
         }
+        
+    };
+    const updateOwnedOnServer = async (itemID) => {
+        try {
+            const coinData = { userID, itemID: itemID };
+            const response = await fetch('http://172.20.10.11/api/updateOwned', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(coinData),
+            });
+
+            const data = await response.json();
+            if (data.error) {
+                console.log(coinData);
+                Alert.alert(data.error);
+                return false;
+            }
+            console.log(data)
+            return true;
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+        
     };
 
     const changeColor = async (color, price, itemID) => {
@@ -139,7 +165,7 @@ export default function Shop() {
             key: 'shipColor',
             data: color,
         });
-
+        updateOwnedOnServer(itemID)
         setOwnedItems([...ownedItems, itemID]);
         storage.save({
             key: 'ownedItems',
@@ -176,7 +202,7 @@ export default function Shop() {
             key: 'bonusLife',
             data: true,
         });
-
+        updateOwnedOnServer(itemID)
         setOwnedItems([...ownedItems, itemID]);
         storage.save({
             key: 'ownedItems',
@@ -213,7 +239,7 @@ export default function Shop() {
             key: 'gameMusic',
             data: music,
         });
-
+        updateOwnedOnServer(itemID)
         setOwnedItems([...ownedItems, itemID]);
         storage.save({
             key: 'ownedItems',

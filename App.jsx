@@ -7,6 +7,7 @@ import Loading from './Components/Loading';
 import Leaderboard from "./Components/Leaderboard"
 import Login from "./Components/Login"
 import Register from "./Components/Register"
+import Account from './Components/Account';
 import Shop from "./Components/Shop"
 import Payment from './Components/Payment';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -122,6 +123,11 @@ export default function App() {
         <Stack.Screen
             name="Register"
             component={Register}
+            options={{ headerShown: false }} // Hide header for Loading screen
+        />
+        <Stack.Screen
+            name="Account"
+            component={Account}
             options={{ headerShown: false }} // Hide header for Loading screen
         />
         <Stack.Screen

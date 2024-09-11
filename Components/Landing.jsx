@@ -148,7 +148,7 @@ export default function Landing() {
                     className="w-100 h-100 scale-75"
                 />
             </Pressable>
-            {isLoggedIn &&
+            {!isLoggedIn &&
                 <Pressable
                     onPress={() => {
                         playButtonClickSound();
@@ -161,7 +161,7 @@ export default function Landing() {
                     />
                 </Pressable>
             }
-            {!isLoggedIn &&
+            {isLoggedIn &&
                 <Pressable
                     onPress={() => {
                         playButtonClickSound();

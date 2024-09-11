@@ -10,6 +10,7 @@ export default function Leaderboard() {
     const navigation = useNavigation();
     const [fontLoaded, setFontLoaded] = useState(false);
     const [buttonSound, setButtonSound] = useState(null);
+    const [leaderboardData, setLeaderboardData] = useState([]);
 
     // Function to load the font
     async function loadFont() {
@@ -51,19 +52,17 @@ export default function Leaderboard() {
         }
     };
 
-    // Sample leaderboard data
-    const leaderboardData = [
-        { rank: 1, username: 'User1', score: 1000 },
-        { rank: 2, username: 'User2', score: 900 },
-        { rank: 3, username: 'User3', score: 800 },
-        { rank: 4, username: 'User1', score: 1000 },
-        { rank: 5, username: 'User2', score: 900 },
-        { rank: 6, username: 'User3', score: 800 },
-        { rank: 7, username: 'User1', score: 1000 },
-        { rank: 8, username: 'User2', score: 900 },
-        { rank: 9, username: 'User3', score: 800 },
-        { rank: 10, username: 'User3', score: 800 },
-    ];
+    // Fetch leaderboard data from the server
+    useEffect(() => {
+        fetch('http://172.20.10.11/api/getGamesData')
+            .then(response => response.json())
+            .then(data => {
+                setLeaderboardData(data.gamesData);
+            })
+            .catch(error => {
+                console.error('Error fetching leaderboard data:', error);
+            });
+    }, []);
 
     return (
         <>
@@ -71,10 +70,10 @@ export default function Leaderboard() {
             {fontLoaded && (
                 <View>
                     <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-4xl">Leaderboard</Text>
-                    {leaderboardData.map((user) => (
-                        <View key={user.rank} className="flex-row justify-between items-center bg-gray-800 p-2 my-2 rounded">
-                            <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-xl">{user.rank}. {user.username}</Text>
-                            <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-xl">{user.score}</Text>
+                    {leaderboardData.map((user, index) => (
+                        <View key={index} className="flex-row justify-between items-center bg-gray-800 p-2 my-2 rounded">
+                            <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-xl">{index + 1}. {user.username}</Text>
+                            <Text style={{ fontFamily: "PixelifySans" }} className="text-white text-xl">{user.gameScore}</Text>
                         </View>
                     ))}
                     <Pressable

@@ -1,5 +1,5 @@
 import React, {useRef, useState, useEffect, useCallback} from 'react';
-import { View, Animated, Image, Text, Pressable, NativeModules } from 'react-native';
+import { View, Animated, Image, Text, Pressable, NativeModules, Alert } from 'react-native';
 import 'tailwindcss/tailwind.css';
 import Background from './Background';
 import sunImage from '../assets/sprites/obstacles/sunx2.png';
@@ -46,12 +46,25 @@ export default function Game() {
   const [gameSound, setGameSound] = useState();
   const gameSoundRef = useRef();
   const [bonusLife, setBonusLife] = useState();
+  const [userID, setUserID] = useState();
+  const userIDRef = useRef(null);
+  const scoreRef = useRef(0);
   let hearts = [];
   
   useEffect(() => {
     storage.load({ key: 'shipColor' })
     .then((color) => {
         setShipColor(color);
+    })
+    .catch((error) => {
+        console.error('Error loading ship color:', error);
+        // Handle error
+    });
+
+    storage.load({ key: 'id' })
+    .then((id) => {
+        setUserID(id);
+        userIDRef.current = id;
     })
     .catch((error) => {
         console.error('Error loading ship color:', error);
@@ -292,16 +305,16 @@ useFocusEffect(
 
   const updateFreeSpaces = (justifyClass) => {
     if(justifyClass === 'justify-between'){
-      setFreeSpace(['middle']);
+      freeSpaceRef.current = (['middle']);
     }
     else if(justifyClass === "justify-center"){
-      setFreeSpace(['left', 'right']);
+      freeSpaceRef.current = (['left', 'right']);
     }
     else if(justifyClass === "justify-start"){
-      setFreeSpace(['right']);
+      freeSpaceRef.current = (['right']);
     }
     else if(justifyClass === "justify-end"){
-      setFreeSpace(['left']);
+      freeSpaceRef.current = (['left']);
     }
     const selectRandomImage = () => {
       const randomNum = Math.random();
@@ -325,9 +338,6 @@ useFocusEffect(
         }
       }
     };
-
-
-
 
     selectRandomImage();
   };
@@ -387,71 +397,95 @@ useFocusEffect(
     }
   }, [isGameOver, gameOverSound, backgroundSound]); // Trigger when `isGameOver` changes
 
-
-  useEffect(() => {
-    freeSpaceRef.current = freeSpace;
-  }, [freeSpace]);
-
+  useEffect(() =>{
+    scoreRef.current = score;
+  },[score])
   useEffect(() => {
     const updateWrapperPosition = () => {
-  
-      if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
-        return;
-      }
-      gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
-        const playerTop = y1;
-        const playerBottom = y1 + height1;
-      if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
-        return;
-      }
-      obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
-        const obstacleTop = y2;
-        const obstacleBottom = obstacleTop + height2;
-          
-          // Check collision only if obstacle is within player's vicinity
-          if (playerTop < obstacleBottom && playerBottom > obstacleTop) {
-            if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
-              let damage = 0;
-              if (!obstacleRef.current.collided) { // Check if obstacle has already collided
-                obstacleRef.current.collided = true; // Set collided flag
-                
-                if (obstacleImageRef.current === earthImage) {
-                  damage = 1; // Earth: heal 1 health point
-                } else if (obstacleImageRef.current === sunImage) {
-                  damage = -3; // Sun: deduct 3 health points
-                } else if (obstacleImageRef.current === asteroidImage) {
-                  damage = -1; // Asteroid: deduct 1 health point
-                } else if (obstacleImageRef.current === saturnImage || obstacleImageRef.current === jupiterImage) {
-                  damage = -2; // Saturn or Jupiter: deduct 2 health points
-                } else if (obstacleImageRef.current === blackImage) {
-                  healthRef.current = 0; // Black Hole: instantly set health to 0
-                }
-                if(bonusLife){
-                  healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 4);
-                }
-                if(!bonusLife){
-                  healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3); 
-                }
-                storage.save({
-                  key: 'bonusLife',
-                  data: false,
-              });
-                if (healthRef.current === 0) { // Check if health reaches zero
-                  setIsGameOver(true);
-                }
-              }
+        if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
+            return;
+        }
+        gifWrapperRef.current.measureInWindow((x1, y1, height1, width1) => {
+            const playerTop = y1;
+            const playerBottom = y1 + height1;
+            if (isGameOver || !gifWrapperRef.current || !obstacleRef.current) {
+                return;
             }
-          } else {
-            obstacleRef.current.collided = false; // Reset collided flag when obstacle moves out of player's vicinity
-          }
+            obstacleRef.current.measureInWindow((x2, y2, width2, height2) => {
+                const obstacleTop = y2;
+                const obstacleBottom = obstacleTop + height2;
+
+                if (playerTop < obstacleBottom && playerBottom > obstacleTop) {
+                    if (!freeSpaceRef.current.includes(playerLocationRef.current)) {
+                        let damage = 0;
+                        if (!obstacleRef.current.collided) { 
+                        console.log(playerLocationRef.current)
+                        console.log(freeSpaceRef.current)
+                            obstacleRef.current.collided = true; // Set collided flag
+                            console.log(freeSpaceRef.current)
+                            if (obstacleImageRef.current === earthImage) {
+                                damage = 1; // Earth: heal 1 health point
+                            } else if (obstacleImageRef.current === sunImage) {
+                                damage = -3; // Sun: deduct 3 health points
+                            } else if (obstacleImageRef.current === asteroidImage) {
+                                damage = -1; // Asteroid: deduct 1 health point
+                            } else if (obstacleImageRef.current === saturnImage || obstacleImageRef.current === jupiterImage) {
+                                damage = -2; // Saturn or Jupiter: deduct 2 health points
+                            } else if (obstacleImageRef.current === blackImage) {
+                                healthRef.current = 0; // Black Hole: instantly set health to 0
+                            }
+                            if (bonusLife) {
+                                healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 4);
+                            }
+                            if (!bonusLife) {
+                                healthRef.current = Math.min(Math.max(healthRef.current + damage, 0), 3);
+                            }
+                            storage.save({
+                                key: 'bonusLife',
+                                data: false,
+                            });
+                            if (healthRef.current === 0) {
+                                setIsGameOver(true);
+                                const gameData = {
+                                    userID: userIDRef.current,
+                                    gameScore: scoreRef.current,
+                                }
+                                fetchData(gameData);
+                            }
+                        }
+                    }
+                } else {
+                    obstacleRef.current.collided = false; // Reset collided flag when obstacle moves out of player's vicinity
+                }
+            });
         });
-      });
     };
-    
-    const intervalId = setInterval(updateWrapperPosition, 1000/60);
-    
-    return () => clearInterval(intervalId);
-  }, [isGameOver]);
+
+    const fetchData = async (gameData) => {
+      console.log(gameData)
+        try {
+            const response = await fetch('http://172.20.10.11/api/createGame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(gameData),
+            });
+            const responseData = await response.json();
+            console.log(responseData);
+        } catch (error) {
+            console.error('Error:', error);
+            Alert.alert('An error occurred', error.message);
+        }
+    };
+
+    const intervalId = setInterval(updateWrapperPosition, 1000 / 60);
+
+    return () => {
+        clearInterval(intervalId);
+    };
+}, [isGameOver]);
+
 
   if (bonusLife && healthRef.current === 4) {
     hearts = Array.from({ length: 4 }, (_, index) => {

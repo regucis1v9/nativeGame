@@ -3,6 +3,7 @@ import { View, Text, TextInput, Image, Pressable, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as Font from 'expo-font';
 import { Audio } from 'expo-av';
+import storage from './Storage';
 
 export default function Account() {
     const navigation = useNavigation();
@@ -12,16 +13,51 @@ export default function Account() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [fontLoaded, setFontLoaded] = useState(false);
     const buttonSoundRef = useRef(null);
+    const [userID, setUserID] = useState();
 
-    // Load custom font
+
     const loadFont = async () => {
         await Font.loadAsync({
             'PixelifySans': require('../assets/fonts/PixelifySans-VariableFont_wght.ttf'),
         });
         setFontLoaded(true);
     };
-
-    // Load button click sound
+    useEffect(() => {
+        // Load userID from storage
+        storage.load({ key: 'id' })
+        .then((userID) => {
+            setUserID(userID); // Assuming setUserID is a state setter function
+            console.log(userID);
+    
+            // Fetch user data by ID
+            fetch('http://172.20.10.11/api/getByID', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userID }), // Ensure userID is wrapped in an object
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Parse response JSON
+            })
+            .then(data => {
+                console.log(data); // Log the fetched data
+                setEmail(data.user.email)
+                setUsername(data.user.name)
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Alert.alert('An error occurred', error.message);
+            });
+        })
+        .catch((error) => {
+            console.error('Error loading userID:', error);
+        });
+    }, []); // Empty dependency array to run effect only once on component mount
+    
     useEffect(() => {
         const loadButtonClickSound = async () => {
             const { sound } = await Audio.Sound.createAsync(
@@ -43,44 +79,40 @@ export default function Account() {
         loadFont();
     }, []);
 
-    const handleRegister = async () => {
+    const handleUpdate = async () => {
         if (buttonSoundRef.current) {
             buttonSoundRef.current.replayAsync();
         }
-
-        if (password !== confirmPassword) {
-            Alert.alert('Error', 'Passwords do not match');
-            return;
-        }
-        const registerData = {
+        const updateData = {
+            userID: userID,
             name: username,
             password: password,
             email: email,
         };
-
+        if (password !== confirmPassword) {
+            Alert.alert('Error', 'Passwords do not match');
+            console.log(password, confirmPassword)
+            return;
+        }
+        if (password === "") {
+            Alert.alert('Error', 'Password must be filled out');
+            return;
+        }
         try {
-            const response = await fetch('http://172.20.10.11/api/createUser', {
+            const response = await fetch('http://172.20.10.11/api/updateUser', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(registerData),
+                body: JSON.stringify(updateData),
             });
-
-            let data;
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                throw new Error('Invalid JSON response');
-            }
-
-            if (data.error) {
-                Alert.alert(data.error);
+            const responseData = await response.json();
+            if (responseData.error) {
+                Alert.alert(responseData.error);
                 return;
             }
-            Alert.alert('Register successful!');
-            console.log(data);
-            // navigation.navigate('Landing');
+            Alert.alert('Info updated successfully!');
+            console.log(responseData)
         } catch (error) {
             console.error('Error:', error);
             Alert.alert('An error occurred', error.message);
@@ -93,7 +125,9 @@ export default function Account() {
         }
         navigation.goBack();
     };
-
+    const logout = () => {
+        
+    }
     return (
         <View className="flex-1 items-center justify-center bg-gray-900">
             <View className="flex bg-[#222034] border-2 border-[#FCB700] p-6 justify-center items-center w-5/6">
@@ -137,11 +171,14 @@ export default function Account() {
                                 onFocus={() => buttonSoundRef.current && buttonSoundRef.current.replayAsync()}
                             />
                         </View>
-                        <Pressable className="w-60 h-20 flex items-center justify-center mt-20 mb-4" onPress={handleRegister}>
+                        <Pressable className="w-60 h-20 flex items-center justify-center mt-20" onPress={handleUpdate}>
                             <Image source={require('../assets/Save.jpg')} className="opacity-100 scale-75" />
                         </Pressable>
                         <Pressable className="w-60 h-20 flex items-center justify-center rounded-md" onPress={handleGoBack}>
                             <Image source={require('../assets/Back.png')} className="opacity-100 scale-75" />
+                        </Pressable>
+                        <Pressable className="w-60 h-20 flex items-center justify-center mb-4">
+                            <Image source={require('../assets/Logout.jpg')} className="opacity-100 scale-75" />
                         </Pressable>
                     </>
                 )}

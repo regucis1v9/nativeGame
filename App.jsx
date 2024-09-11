@@ -101,7 +101,6 @@ export default function App() {
 
     return () => deepLinkListener.remove();
   }, [handleDeepLink]);
-
   return (
     <NavigationContainer>
       <Stack.Navigator>

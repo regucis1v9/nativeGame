@@ -10,10 +10,8 @@ class PaymentController extends Controller
 {
     public function createPaymentIntent(Request $request)
     {
-        // Get the coin amount from the query parameters
         $coinAmount = $request->query('coinAmount');
 
-        // Multiply the coin amount by 50 to achieve the payment amount
         $paymentAmount = $coinAmount * 50;
 
         // Create Stripe customer and ephemeral key
@@ -32,7 +30,7 @@ class PaymentController extends Controller
             // Create a payment intent with the calculated payment amount
             $paymentIntent = $stripe->paymentIntents->create([
                 'amount' => $paymentAmount,
-                'currency' => 'usd',
+                'currency' => 'eur',
                 'customer' => $customer->id,
                 'description' => 'Purchase of in-game currency',
             ]);
@@ -50,8 +48,13 @@ class PaymentController extends Controller
         }
     }
 
-    public function test()
+    public function test(Request $request)
     {
-        return response()->json('testing');
+        // Retrieve all input data from the request body
+        $inputData = $request->all();
+        
+        // Return the input data as JSON response
+        return response()->json($inputData, 200);
     }
+    
 }
